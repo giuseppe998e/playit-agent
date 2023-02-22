@@ -1,9 +1,36 @@
 [workspace]
-members = [
-    "packages/agent_cli",
-    "packages/agent_core",
-    "packages/agent_proto",
-]
+members = ["packages/*"]
+exclude = []
+
+[workspace.package]
+version = "1.0.0-rc2"
+authors = ["Patrick Lorio <support@playit.gg>"]
+edition = "2021"
+
+[workspace.dependencies]
+anyhow = { version = "1.0" }
+byteorder = { version = "1.4" }
+clap = { version = "4.0" }
+hex = { version = "0.4" }
+hmac = { version = "0.12" }
+hyper = { version = "0.14" }
+hyper-rustls = { version = "0.23" }
+rand = { version = "0.8" }
+serde = { version = "1.0" }
+serde_json = { version = "1.0" }
+serde_yaml = { version = "0.9" }
+sha2 = { version = "0.10" }
+tokio = { version = "1.25" }
+toml = { version = "0.7" }
+tracing =  { version = "0.1" }
+tracing-subscriber = { version = "0.3" }
+urlencoding = { version = "2.1" }
+uuid = { version = "1.1" }
+
+[workspace.dev-dependencies]
+rand = { version = "0.8" }
 
 [profile.release]
-strip = "debuginfo"
+codegen-units = 1
+strip = true
+lto = true
