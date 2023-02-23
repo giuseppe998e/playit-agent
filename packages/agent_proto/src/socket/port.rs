@@ -9,17 +9,10 @@ pub enum Port {
 }
 
 impl Port {
-    fn iter<'a>(&'a self) -> Box<dyn Iterator<Item = u16> + 'a> {
-        match self {
-            Port::Single(port) => Box::new(iter::once(*port)),
-            Port::Range(range) => Box::new(range.clone()),
-        }
-    }
-
     fn into_iter(self) -> Box<dyn Iterator<Item = u16>> {
         match self {
             Port::Single(port) => Box::new(iter::once(port)),
-            Port::Range(range) => Box::new(range.into_iter()),
+            Port::Range(range) => Box::new(range),
         }
     }
 }
