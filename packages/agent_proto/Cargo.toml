@@ -5,8 +5,9 @@ authors = { workspace = true }
 edition = { workspace = true }
 
 [features]
+default = ["tokio"]
 tokio = ["dep:async-trait", "dep:tokio"]
-std = ["dep:byteorder"]
+blocking = ["dep:byteorder"]
 
 [dependencies]
 async-trait = { workspace = true, optional = true }
