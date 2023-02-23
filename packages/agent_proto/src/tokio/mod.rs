@@ -25,7 +25,7 @@ mod en_dec {
             PortMappingRequest, PortMappingResponse, RegisterRequest, RegisterResponse,
             UdpChannelResponse,
         },
-        hmac::{HmacSign, signer::HmacSigner},
+        hmac::{signer::HmacSigner, HmacSign},
         socket::{Port, Protocol, Socket},
     };
 
