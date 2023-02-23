@@ -28,6 +28,7 @@ impl<T: AsyncMessageDecode> AsyncMessageDecode for Option<T> {
         match input.read_u8().await? {
             0 => Ok(None),
             1 => T::read_from(input).await.map(Some),
+
             v => Err(Error::new(
                 ErrorKind::InvalidData,
                 format!("Given input(\"{v}\") is not an \"Option<T>\"."),
@@ -85,6 +86,7 @@ impl AsyncMessageDecode for SocketAddr {
                 0,
                 0,
             ))),
+
             v => Err(Error::new(
                 ErrorKind::InvalidData,
                 format!("Given input(\"{v}\") is not a \"SocketAddr\"."),
@@ -102,6 +104,7 @@ impl AsyncMessageDecode for IpAddr {
         match input.read_u8().await? {
             4 => Ipv4Addr::read_from(input).await.map(IpAddr::V4),
             6 => Ipv6Addr::read_from(input).await.map(IpAddr::V6),
+
             v => Err(Error::new(
                 ErrorKind::InvalidData,
                 format!("Given input(\"{v}\") is not a \"IpAddr\"."),

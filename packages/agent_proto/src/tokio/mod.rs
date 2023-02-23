@@ -25,7 +25,7 @@ mod en_dec {
             PortMappingRequest, PortMappingResponse, RegisterRequest, RegisterResponse,
             UdpChannelResponse,
         },
-        hmac::HmacSign,
+        hmac::{HmacSign, signer::HmacSigner},
         socket::{Port, Protocol, Socket},
     };
 
@@ -249,11 +249,13 @@ mod en_dec {
     //      // NOT_NEEDED alias of "AgentSession"
     // }
 
-    // TODO randomic data
     #[test]
     fn test_hmacsign() {
+        use sha2::digest::KeyInit;
+        let hmac = hmac::Hmac::<sha2::Sha256>::new_from_slice(&random::<[u8; 16]>()).unwrap();
+
         let mut buf = Vec::<u8>::with_capacity(size_of::<HmacSign<sha2::Sha256>>());
-        let data = HmacSign::<sha2::Sha256>::default();
+        let data = hmac.sign_data(&random::<[u8; 16]>());
 
         // Encode
         assert!(matches!(aw!(data.clone().write_into(&mut buf)), Ok(_)));

@@ -19,6 +19,7 @@ impl<T: MessageDecode> MessageDecode for Option<T> {
         match input.read_u8()? {
             0 => Ok(None),
             1 => T::read_from(input).map(Some),
+
             v => Err(Error::new(
                 ErrorKind::InvalidData,
                 format!("Given input(\"{v}\") is not an \"Option<T>\"."),
@@ -64,6 +65,7 @@ impl MessageDecode for SocketAddr {
                 0,
                 0,
             ))),
+
             v => Err(Error::new(
                 ErrorKind::InvalidData,
                 format!("Given input(\"{v}\") is not a \"SocketAddr\"."),

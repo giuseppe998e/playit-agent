@@ -1,4 +1,4 @@
-use std::{num::NonZeroU16, ops::RangeInclusive};
+use std::{iter, num::NonZeroU16, ops::RangeInclusive};
 
 use serde::{ser::SerializeStruct, Deserialize, Deserializer, Serialize, Serializer};
 
@@ -8,7 +8,21 @@ pub enum Port {
     Range(RangeInclusive<u16>),
 }
 
-// TODO iterator
+impl Port {
+    fn iter<'a>(&'a self) -> Box<dyn Iterator<Item = u16> + 'a> {
+        match self {
+            Port::Single(port) => Box::new(iter::once(*port)),
+            Port::Range(range) => Box::new(range.clone()),
+        }
+    }
+
+    fn into_iter(self) -> Box<dyn Iterator<Item = u16>> {
+        match self {
+            Port::Single(port) => Box::new(iter::once(port)),
+            Port::Range(range) => Box::new(range.into_iter()),
+        }
+    }
+}
 
 impl Serialize for Port {
     fn serialize<S>(&self, serial: S) -> Result<S::Ok, S::Error>

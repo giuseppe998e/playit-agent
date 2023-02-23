@@ -9,8 +9,8 @@ pub struct PortMappingRequest {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct PortMappingResponse {
     pub socket: Socket,
-    // XXX What does it means? (exist?)
-    // TODO Remove Option and use "None" instead
+    // FIXME Remove Option and use "None" instead (Needs server-side edit)
+    // What does it means? (exist?)
     pub found: Option<PortMappingFound>,
 }
 

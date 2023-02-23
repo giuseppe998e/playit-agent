@@ -37,6 +37,7 @@ impl MessageDecode for Protocol {
             1 => Ok(Self::Tcp),
             2 => Ok(Self::Udp),
             3 => Ok(Self::Both),
+
             v => Err(Error::new(
                 ErrorKind::InvalidData,
                 format!("Given input(\"{v}\") is not an \"socket::Protocol\"."),

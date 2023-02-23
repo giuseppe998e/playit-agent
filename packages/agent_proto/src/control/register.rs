@@ -15,7 +15,8 @@ pub struct RegisterRequest {
     pub signature: HmacSign<Sha256>,
 }
 
-// TODO impl
+// XXX Methods not implemented due to not being used
+// https://github.com/playit-cloud/playit-agent/blob/185bfb0a75d3af75d915c84fa1bcd514653220f1/packages/agent_proto/src/control_messages.rs#L111 
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct RegisterResponse {
