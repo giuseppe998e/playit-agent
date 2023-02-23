@@ -4,12 +4,20 @@ version = { workspace = true }
 authors = { workspace = true }
 edition = { workspace = true }
 
+[features]
+default = ["tokio", "std"]
+tokio = ["dep:async-trait", "dep:tokio"]
+std = ["dep:byteorder"]
+
 [dependencies]
-serde = { workspace = true, features = ["derive"] }
-byteorder = { workspace = true }
-sha2 = { workspace = true }
-hmac = { workspace = true }
+async-trait = { workspace = true, optional = true }
+byteorder = { workspace = true, optional = true }
 hex = { workspace = true }
+hmac = { workspace = true }
+serde = { workspace = true, default-features = false, features = ["derive"] }
+sha2 = { workspace = true }
+tokio = { workspace = true, default-features = false, features = ["io-util"], optional = true }
 
 [dev-dependencies]
 rand = { workspace = true }
+tokio-test = { workspace = true }
