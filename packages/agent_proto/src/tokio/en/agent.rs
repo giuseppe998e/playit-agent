@@ -6,7 +6,7 @@ impl super::AsyncMessageEncode for AgentSession {
     where
         W: ::tokio::io::AsyncWriteExt + Unpin + Send,
     {
-        buf.write_u64(self.session_id).await?;
+        buf.write_u64(self.id).await?;
         buf.write_u64(self.account_id).await?;
         buf.write_u64(self.agent_id).await
     }

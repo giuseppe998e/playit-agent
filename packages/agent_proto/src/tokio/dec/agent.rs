@@ -6,12 +6,12 @@ impl super::AsyncMessageDecode for AgentSession {
     where
         R: ::tokio::io::AsyncReadExt + Unpin + Send,
     {
-        let session_id = input.read_u64().await?;
+        let id = input.read_u64().await?;
         let account_id = input.read_u64().await?;
         let agent_id = input.read_u64().await?;
 
         Ok(Self {
-            session_id,
+            id,
             account_id,
             agent_id,
         })

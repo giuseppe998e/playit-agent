@@ -27,7 +27,7 @@ mod en_dec {
     fn test_agentsession() {
         let mut buf = Vec::<u8>::with_capacity(size_of::<AgentSession>());
         let data = AgentSession {
-            session_id: random(),
+            id: random(),
             account_id: random(),
             agent_id: random(),
         };
@@ -45,7 +45,7 @@ mod en_dec {
     fn test_controlrequest() {
         let mut buf = Vec::<u8>::with_capacity(size_of::<ControlRequest>());
         let data = ControlRequest::KeepAlive(KeepAliveRequest {
-            session_id: random(),
+            id: random(),
             account_id: random(),
             agent_id: random(),
         });
@@ -117,7 +117,7 @@ mod en_dec {
         let mut buf = Vec::<u8>::with_capacity(size_of::<PortMappingRequest>());
         let data = PortMappingRequest {
             session: AgentSession {
-                session_id: random(),
+                id: random(),
                 account_id: random(),
                 agent_id: random(),
             },
@@ -164,7 +164,7 @@ mod en_dec {
     fn test_control_portmappingfound() {
         let mut buf = Vec::<u8>::with_capacity(size_of::<PortMappingFound>());
         let data = PortMappingFound::ToAgent(AgentSession {
-            session_id: random(),
+            id: random(),
             account_id: random(),
             agent_id: random(),
         });
@@ -205,7 +205,7 @@ mod en_dec {
         let mut buf = Vec::<u8>::with_capacity(size_of::<RegisterResponse>());
         let data = RegisterResponse {
             session: AgentSession {
-                session_id: random(),
+                id: random(),
                 account_id: random(),
                 agent_id: random(),
             },
