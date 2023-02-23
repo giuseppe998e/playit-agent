@@ -4,9 +4,11 @@ pub mod hmac;
 pub mod socket;
 
 // Sync bytes encoding & decoding
-#[cfg(feature = "std")]
-pub mod std;
+#[cfg(feature = "blocking")]
+pub mod blocking;
 
 // Async bytes encoding & decoding
 #[cfg(feature = "tokio")]
-pub mod tokio;
+mod tokio;
+#[cfg(feature = "tokio")]
+pub use crate::tokio::{dec, en};
