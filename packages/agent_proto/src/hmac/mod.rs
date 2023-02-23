@@ -1,12 +1,7 @@
 use hmac::digest::generic_array::GenericArray;
-use sha2::Digest;
+use sha2::{Digest, Sha256};
 
 pub(crate) mod signer;
-
-// pub(crate) const SHA224_BYTES: usize = 28;
-pub(crate) const SHA256_BYTES: usize = 32;
-// pub(crate) const SHA384_BYTES: usize = 48;
-// pub(crate) const SHA512_BYTES: usize = 64;
 
 #[derive(Clone, Default)]
 pub struct HmacSign<D: Digest>(pub(super) GenericArray<u8, D::OutputSize>);
@@ -17,6 +12,22 @@ impl<D: Digest> HmacSign<D> {
         self.0.as_slice()
     }
 }
+
+// impl HmacSign<Sha224> {
+//     pub const BYTES: usize = 28;
+// }
+
+impl HmacSign<Sha256> {
+    pub const BYTES: usize = 32;
+}
+
+// impl HmacSign<Sha384> {
+//     pub const BYTES: usize = 48;
+// }
+
+// impl HmacSign<Sha512> {
+//     pub const BYTES: usize = 48;
+// }
 
 impl<D: Digest> PartialEq for HmacSign<D> {
     fn eq(&self, other: &Self) -> bool {
