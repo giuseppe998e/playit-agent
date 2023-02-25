@@ -2,6 +2,7 @@ mod client;
 mod error;
 pub mod message;
 
+// TODO Add synchronous version (ureq)
 pub use client::{builder::PlayItClientBuilder, PlayItClient};
 pub use error::{Error, ErrorKind, Result};
 
