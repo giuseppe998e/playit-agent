@@ -4,7 +4,7 @@ use std::{fmt, marker::PhantomData};
 
 use reqwest::{Client as ReqwestClient, Method, Url};
 use serde::Deserialize;
-use serde_json::Value;
+use serde_json::{Map, Value};
 
 use crate::{Error, Result};
 
@@ -24,30 +24,55 @@ pub struct PlayItClient<K: PlayItClientKind = Guest> {
 }
 
 impl<K: PlayItClientKind> PlayItClient<K> {
+    // FIXME A different server response format can simplify client code
     pub(crate) async fn post<O>(&self, endpoint: &str, payload: &Value) -> Result<O>
     where
         for<'d> O: Deserialize<'d>,
     {
         let url = self.api_url.join(endpoint).map_err(Error::request)?;
-        let response = self
-            .client
-            .request(Method::POST, url)
-            .json(payload)
-            .send()
-            .await
-            .map_err(Error::request)?;
+        let response_bytes = {
+            let response = self
+                .client
+                .request(Method::POST, url)
+                .json(payload)
+                .send()
+                .await
+                .map_err(Error::request)?;
 
-        let response_json = {
-            let response_bytes = response.bytes().await.map_err(Error::response)?;
-            serde_json::from_slice::<'_, ApiResponse<O>>(&response_bytes).map_err(|_| {
-                let stringify = String::from_utf8_lossy(&response_bytes);
-                Error::unexpected_data(stringify)
-            })?
+            response.bytes().await.map_err(Error::response)?
         };
 
-        match response_json {
-            ApiResponse::Ok(obj) => Ok(obj),
-            ApiResponse::Error { code, message } => Err(Error::server_status(code, message)),
+        let mut json_map = serde_json::from_slice::<'_, Map<String, Value>>(&response_bytes)
+            .map_err(|_| {
+                let stringify = String::from_utf8_lossy(&response_bytes);
+                Error::unexpected_data(stringify)
+            })?;
+
+        let kind = json_map
+            .remove("type")
+            .and_then(|val| match val {
+                Value::String(str) => Some(str),
+                _ => None,
+            })
+            .ok_or_else(|| {
+                let stringify = String::from_utf8_lossy(&response_bytes);
+                Error::unexpected_data(stringify)
+            })?;
+
+        match kind.as_str() {
+            "error" => {
+                let ApiError { code, message } =
+                    serde_json::from_value::<ApiError>(json_map.into()).map_err(|_| {
+                        let stringify = String::from_utf8_lossy(&response_bytes);
+                        Error::unexpected_data(stringify)
+                    })?;
+
+                Err(Error::server_status(code, message))
+            }
+            _ => serde_json::from_value::<O>(json_map.into()).map_err(|_| {
+                let stringify = String::from_utf8_lossy(&response_bytes);
+                Error::unexpected_data(stringify)
+            }),
         }
     }
 }
@@ -71,8 +96,7 @@ impl fmt::Debug for PlayItClient<Authorized> {
 }
 
 #[derive(Deserialize)]
-#[serde(untagged)]
-enum ApiResponse<T> {
-    Ok(T),
-    Error { code: u16, message: String },
+struct ApiError {
+    code: u16,
+    message: String,
 }
