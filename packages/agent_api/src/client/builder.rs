@@ -5,10 +5,7 @@ use reqwest::{
     ClientBuilder as ReqwestBuilder, Url,
 };
 
-use crate::{ApiClient, Error, Result};
-
-const PLAYIT_GG_API_URL: &str = "https://api.playit.cloud";
-const CLIENT_USER_AGENT: &str = concat!("playit-agent/", env!("CARGO_PKG_VERSION"));
+use crate::{ApiClient, Error, Result, DEFAULT_API_BASE_URL, DEFAULT_CLIENT_USER_AGENT};
 
 #[must_use]
 pub struct ApiClientBuilder {
@@ -22,7 +19,7 @@ impl ApiClientBuilder {
         Self {
             api_url: api_url.into(),
             secret: None,
-            reqw_builder: ReqwestBuilder::new().user_agent(CLIENT_USER_AGENT),
+            reqw_builder: ReqwestBuilder::new().user_agent(DEFAULT_CLIENT_USER_AGENT),
         }
     }
 
@@ -58,6 +55,6 @@ impl ApiClientBuilder {
 impl Default for ApiClientBuilder {
     #[inline]
     fn default() -> Self {
-        Self::with_base_url(PLAYIT_GG_API_URL)
+        Self::with_base_url(DEFAULT_API_BASE_URL)
     }
 }
