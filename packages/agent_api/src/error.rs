@@ -18,6 +18,7 @@ pub enum ErrorKind {
     Builder,
     Request,
     Response,
+    UnexpectedData,
     ServerStatus(u16),
 }
 
@@ -56,6 +57,16 @@ impl Error {
     pub(super) fn response<C: Into<BoxError>>(cause: C) -> Self {
         Self::new(ErrorKind::Response).with(cause)
     }
+
+    #[inline]
+    pub(super) fn unexpected_data<C: Into<BoxError>>(cause: C) -> Self {
+        Self::new(ErrorKind::UnexpectedData).with(cause)
+    }
+
+    #[inline]
+    pub(super) fn server_status<C: Into<BoxError>>(code: u16, cause: C) -> Self {
+        Self::new(ErrorKind::ServerStatus(code)).with(cause)
+    }
 }
 
 impl StdError for Error {
@@ -70,6 +81,7 @@ impl fmt::Display for Error {
             ErrorKind::Builder => f.write_str("failed to create the API client")?,
             ErrorKind::Request => f.write_str("failed to make the API request")?,
             ErrorKind::Response => f.write_str("failed to parse API response data")?,
+            ErrorKind::UnexpectedData => f.write_str("server returned unexpected data")?,
             ErrorKind::ServerStatus(code) => write!(f, "server returned an error code {code}")?,
         }
 
