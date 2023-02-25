@@ -1,5 +1,6 @@
 mod client;
 mod error;
+pub mod message;
 
 pub use client::{builder::PlayItClientBuilder, PlayItClient};
 pub use error::{Error, ErrorKind, Result};
