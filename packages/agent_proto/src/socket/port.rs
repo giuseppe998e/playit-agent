@@ -2,10 +2,12 @@ use std::{iter, num::NonZeroU16, ops::RangeInclusive};
 
 use serde::{ser::SerializeStruct, Deserialize, Deserializer, Serialize, Serializer};
 
+pub type PortRange = RangeInclusive<u16>;
+
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Port {
     Single(u16),
-    Range(RangeInclusive<u16>),
+    Range(PortRange),
 }
 
 impl Port {
@@ -13,6 +15,25 @@ impl Port {
         match self {
             Port::Single(port) => Box::new(iter::once(port)),
             Port::Range(range) => Box::new(range),
+        }
+    }
+}
+
+impl From<Port> for PortRange {
+    fn from(value: Port) -> Self {
+        match value {
+            Port::Single(port) => port..=port,
+            Port::Range(range) => range,
+        }
+    }
+}
+
+impl From<PortRange> for Port {
+    fn from(value: PortRange) -> Self {
+        let (from, to) = value.into_inner();
+        match (from, to) {
+            (_, _) if from < to => return Self::Range(from..=to),
+            _ => return Self::Single(from),
         }
     }
 }
