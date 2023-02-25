@@ -11,7 +11,7 @@ pub enum Port {
 }
 
 impl Port {
-    fn into_iter(self) -> Box<dyn Iterator<Item = u16>> {
+    pub fn into_iter(self) -> Box<dyn Iterator<Item = u16>> {
         match self {
             Port::Single(port) => Box::new(iter::once(port)),
             Port::Range(range) => Box::new(range),
