@@ -11,6 +11,13 @@ pub enum Port {
 }
 
 impl Port {
+    pub fn new(from: u16, to: Option<u16>) -> Self {
+        match to {
+            Some(to) if from < to => Self::Range(from..=to),
+            _ => Self::Single(from),
+        }
+    }
+
     pub fn into_iter(self) -> Box<dyn Iterator<Item = u16>> {
         match self {
             Port::Single(port) => Box::new(iter::once(port)),
@@ -78,10 +85,10 @@ impl<'d> Deserialize<'d> for Port {
             port_end,
         } = PortRaw::deserialize(deser)?;
         match (port, port_start, port_end) {
-            (Some(v), None, None) => Ok(Self::Single(v.get())),
-            (None, Some(s), None) => Ok(Self::Single(s.get())),
-            (None, Some(s), Some(e)) if s == e => Ok(Self::Single(s.get())),
-            (None, Some(s), Some(e)) if s < e => Ok(Self::Range(s.get()..=e.get())),
+            (Some(value), None, None) => Ok(Self::Single(value.get())),
+            (None, Some(value), None) => Ok(Self::Single(value.get())),
+            (None, Some(from), Some(to)) if from == to => Ok(Self::Single(from.get())),
+            (None, Some(from), Some(to)) if from < to => Ok(Self::Range(from.get()..=to.get())),
             _ => Err(serde::de::Error::custom(
                 "failed to deserialize socket port(s).",
             )),
