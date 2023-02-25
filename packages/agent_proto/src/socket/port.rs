@@ -2,17 +2,45 @@ use std::{iter, num::NonZeroU16, ops::RangeInclusive};
 
 use serde::{ser::SerializeStruct, Deserialize, Deserializer, Serialize, Serializer};
 
+pub type PortRange = RangeInclusive<u16>;
+
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Port {
     Single(u16),
-    Range(RangeInclusive<u16>),
+    Range(PortRange),
 }
 
 impl Port {
-    fn into_iter(self) -> Box<dyn Iterator<Item = u16>> {
+    pub fn new(from: u16, to: Option<u16>) -> Self {
+        match to {
+            Some(to) if from < to => Self::Range(from..=to),
+            _ => Self::Single(from),
+        }
+    }
+
+    pub fn into_iter(self) -> Box<dyn Iterator<Item = u16>> {
         match self {
             Port::Single(port) => Box::new(iter::once(port)),
             Port::Range(range) => Box::new(range),
+        }
+    }
+}
+
+impl From<Port> for PortRange {
+    fn from(value: Port) -> Self {
+        match value {
+            Port::Single(port) => port..=port,
+            Port::Range(range) => range,
+        }
+    }
+}
+
+impl From<PortRange> for Port {
+    fn from(value: PortRange) -> Self {
+        let (from, to) = value.into_inner();
+        match (from, to) {
+            (_, _) if from < to => return Self::Range(from..=to),
+            _ => return Self::Single(from),
         }
     }
 }
@@ -57,10 +85,10 @@ impl<'d> Deserialize<'d> for Port {
             port_end,
         } = PortRaw::deserialize(deser)?;
         match (port, port_start, port_end) {
-            (Some(v), None, None) => Ok(Self::Single(v.get())),
-            (None, Some(s), None) => Ok(Self::Single(s.get())),
-            (None, Some(s), Some(e)) if s == e => Ok(Self::Single(s.get())),
-            (None, Some(s), Some(e)) if s < e => Ok(Self::Range(s.get()..=e.get())),
+            (Some(value), None, None) => Ok(Self::Single(value.get())),
+            (None, Some(value), None) => Ok(Self::Single(value.get())),
+            (None, Some(from), Some(to)) if from == to => Ok(Self::Single(from.get())),
+            (None, Some(from), Some(to)) if from < to => Ok(Self::Range(from.get()..=to.get())),
             _ => Err(serde::de::Error::custom(
                 "failed to deserialize socket port(s).",
             )),
