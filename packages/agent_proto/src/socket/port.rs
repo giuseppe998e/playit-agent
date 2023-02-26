@@ -35,11 +35,17 @@ impl From<Port> for PortRange {
     }
 }
 
+impl From<u16> for Port {
+    fn from(value: u16) -> Self {
+        Self::Single(value)
+    }
+}
+
 impl From<PortRange> for Port {
     fn from(value: PortRange) -> Self {
         let (from, to) = value.into_inner();
         match (from, to) {
-            (_, _) if from < to => return Self::Range(from..=to),
+            _ if from < to => return Self::Range(from..=to),
             _ => return Self::Single(from),
         }
     }

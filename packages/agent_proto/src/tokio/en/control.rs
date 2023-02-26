@@ -5,7 +5,7 @@ use tokio::io::AsyncWriteExt;
 
 use crate::control::{
     ControlRequest, ControlResponse, Ping, Pong, PortMappingFound, PortMappingRequest,
-    PortMappingResponse, RegisterRequest, RegisterResponse, UdpChannelResponse,
+    PortMappingResponse, RegisterRequest, RegisterResponse, UdpChannelDetails,
 };
 
 use super::AsyncMessageEncode;
@@ -174,7 +174,7 @@ impl AsyncMessageEncode for RegisterResponse {
 
 // udp_chnl.rs
 #[async_trait]
-impl AsyncMessageEncode for UdpChannelResponse {
+impl AsyncMessageEncode for UdpChannelDetails {
     async fn write_into<W>(self, buf: &mut W) -> Result<()>
     where
         W: AsyncWriteExt + Unpin + Send,
