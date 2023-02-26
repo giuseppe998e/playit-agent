@@ -2,11 +2,11 @@ use serde::Deserialize;
 use serde_json::json;
 use uuid::Uuid;
 
-use crate::{client::Authorized, PlayItClient, Result};
+use crate::{client::Authorized, ApiClient, Result};
 
 const AUTH_ENDPOINT: &str = "/login";
 
-impl PlayItClient<Authorized> {
+impl ApiClient<Authorized> {
     pub async fn create_guest_session(&self) -> Result<GuestSession> {
         let payload = json!({ "type": "create-guest-session" });
         self.post(AUTH_ENDPOINT, &payload).await

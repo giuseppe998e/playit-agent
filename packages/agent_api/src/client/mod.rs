@@ -8,22 +8,22 @@ use serde_json::{Map, Value};
 
 use crate::{Error, Result};
 
-pub trait PlayItClientKind {}
+pub trait ApiClientKind {}
 
 pub struct Guest;
-impl PlayItClientKind for Guest {}
+impl ApiClientKind for Guest {}
 
 pub struct Authorized;
-impl PlayItClientKind for Authorized {}
+impl ApiClientKind for Authorized {}
 
 #[derive(Clone)]
-pub struct PlayItClient<K: PlayItClientKind = Guest> {
+pub struct ApiClient<K: ApiClientKind = Guest> {
     api_url: Url,
     client: ReqwestClient,
     __phantom: PhantomData<K>,
 }
 
-impl<K: PlayItClientKind> PlayItClient<K> {
+impl<K: ApiClientKind> ApiClient<K> {
     // FIXME A different server response format can simplify client code
     pub(crate) async fn post<O>(&self, endpoint: &str, payload: &Value) -> Result<O>
     where
@@ -77,7 +77,7 @@ impl<K: PlayItClientKind> PlayItClient<K> {
     }
 }
 
-impl fmt::Debug for PlayItClient<Guest> {
+impl fmt::Debug for ApiClient<Guest> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("PlayItClient")
             .field("api_url", &self.api_url)
@@ -86,7 +86,7 @@ impl fmt::Debug for PlayItClient<Guest> {
     }
 }
 
-impl fmt::Debug for PlayItClient<Authorized> {
+impl fmt::Debug for ApiClient<Authorized> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("PlayItClient")
             .field("api_url", &self.api_url)
