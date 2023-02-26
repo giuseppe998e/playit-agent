@@ -5,19 +5,19 @@ use reqwest::{
     ClientBuilder as ReqwestBuilder, Url,
 };
 
-use crate::{Error, PlayItClient, Result, DEFAULT_API_BASE_URL, DEFAULT_CLIENT_USER_AGENT};
+use crate::{Error, ApiClient, Result, DEFAULT_API_BASE_URL, DEFAULT_CLIENT_USER_AGENT};
 
-use super::{Authorized, Guest, PlayItClientKind};
+use super::{Authorized, Guest, ApiClientKind};
 
 #[must_use]
-pub struct PlayItClientBuilder<K: PlayItClientKind = Guest> {
+pub struct ApiClientBuilder<K: ApiClientKind = Guest> {
     api_url: String,
     secret: Option<Result<HeaderValue>>,
     reqw_builder: ReqwestBuilder,
     __phantom: PhantomData<K>,
 }
 
-impl<K: PlayItClientKind> PlayItClientBuilder<K> {
+impl<K: ApiClientKind> ApiClientBuilder<K> {
     pub fn with_base_url<S: Into<String>>(api_url: S) -> Self {
         Self {
             api_url: api_url.into(),
@@ -32,7 +32,7 @@ impl<K: PlayItClientKind> PlayItClientBuilder<K> {
         self
     }
 
-    pub fn build(mut self) -> Result<PlayItClient<K>> {
+    pub fn build(mut self) -> Result<ApiClient<K>> {
         if let Some(secret_header) = self.secret {
             let mut headers = HeaderMap::with_capacity(1);
             headers.insert(header::AUTHORIZATION, secret_header?);
@@ -42,7 +42,7 @@ impl<K: PlayItClientKind> PlayItClientBuilder<K> {
         let api_url = Url::from_str(&self.api_url).map_err(Error::builder)?;
         let client = self.reqw_builder.build().map_err(Error::builder)?;
 
-        Ok(PlayItClient {
+        Ok(ApiClient {
             api_url,
             client,
             __phantom: PhantomData,
@@ -50,13 +50,13 @@ impl<K: PlayItClientKind> PlayItClientBuilder<K> {
     }
 }
 
-impl PlayItClientBuilder<Guest> {
-    pub fn secret<S: AsRef<str>>(self, secret: S) -> PlayItClientBuilder<Authorized> {
+impl ApiClientBuilder<Guest> {
+    pub fn secret<S: AsRef<str>>(self, secret: S) -> ApiClientBuilder<Authorized> {
         let secret = format!("agent-key {}", secret.as_ref());
         let bytes = secret.into_bytes();
         let secret = HeaderValue::from_bytes(&bytes).map_err(Error::builder);
 
-        PlayItClientBuilder {
+        ApiClientBuilder {
             api_url: self.api_url,
             secret: Some(secret),
             reqw_builder: self.reqw_builder,
@@ -65,7 +65,7 @@ impl PlayItClientBuilder<Guest> {
     }
 }
 
-impl Default for PlayItClientBuilder<Guest> {
+impl Default for ApiClientBuilder<Guest> {
     #[inline]
     fn default() -> Self {
         Self::with_base_url(DEFAULT_API_BASE_URL)

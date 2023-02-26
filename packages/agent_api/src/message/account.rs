@@ -5,11 +5,11 @@ use serde::{Deserialize, Serialize};
 use serde_json::json;
 use uuid::Uuid;
 
-use crate::{client::Authorized, PlayItClient, Result};
+use crate::{client::Authorized, ApiClient, Result};
 
 const ACCOUNT_ENDPOINT: &str = "/account";
 
-impl PlayItClient<Authorized> {
+impl ApiClient<Authorized> {
     pub async fn create_tunnel(&self, payload: CreateTunnelPayload) -> Result<Uuid> {
         let payload = {
             let mut payload = json!(payload);

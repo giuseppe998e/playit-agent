@@ -3,11 +3,11 @@ use std::net::SocketAddr;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 
-use crate::{client::Authorized, PlayItClient, Result};
+use crate::{client::Authorized, ApiClient, Result};
 
 const AGENT_ENDPOINT: &str = "/agent";
 
-impl PlayItClient<Authorized> {
+impl ApiClient<Authorized> {
     pub async fn get_control_address(&self) -> Result<ControlAddress> {
         let payload = json!({ "type": "get-control-address" });
         self.post(AGENT_ENDPOINT, &payload).await
