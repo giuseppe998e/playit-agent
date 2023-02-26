@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
 pub enum Protocol {
     #[serde(rename = "tcp")]
     Tcp,
