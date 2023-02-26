@@ -12,7 +12,7 @@ use crate::{
     control::{
         ControlRequest, ControlResponse, KeepAliveRequest, Ping, Pong, PortMappingFound,
         PortMappingRequest, PortMappingResponse, RegisterRequest, RegisterResponse,
-        UdpChannelRequest, UdpChannelResponse,
+        UdpChannelRequest, UdpChannelDetails,
     },
     hmac::HmacSign,
     socket::Socket,
@@ -65,7 +65,7 @@ impl AsyncMessageDecode for ControlResponse {
             Self::TRY_AGAIN_LATER_IDX => Ok(Self::TryAgainLater),
 
             Self::REGISTER_IDX => RegisterResponse::read_from(input).await.map(Self::Register),
-            Self::UPD_CHANNEL_IDX => UdpChannelResponse::read_from(input)
+            Self::UPD_CHANNEL_IDX => UdpChannelDetails::read_from(input)
                 .await
                 .map(Self::UdpChannel),
             Self::PORT_MAPPING_IDX => PortMappingResponse::read_from(input)
@@ -210,7 +210,7 @@ impl AsyncMessageDecode for RegisterResponse {
 
 // udp_chnl.rs
 #[async_trait]
-impl AsyncMessageDecode for UdpChannelResponse {
+impl AsyncMessageDecode for UdpChannelDetails {
     async fn read_from<R>(input: &mut R) -> Result<Self>
     where
         R: AsyncReadExt + Unpin + Send,

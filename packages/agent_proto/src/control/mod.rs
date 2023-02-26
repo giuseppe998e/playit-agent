@@ -6,7 +6,7 @@ mod udp_chnl;
 pub use ping::{Ping, Pong};
 pub use port_map::{PortMappingFound, PortMappingRequest, PortMappingResponse};
 pub use register::{RegisterRequest, RegisterResponse};
-pub use udp_chnl::{UdpChannelRequest, UdpChannelResponse};
+pub use udp_chnl::{UdpChannelRequest, UdpChannelDetails};
 
 use crate::agent::AgentSession;
 
@@ -55,7 +55,7 @@ pub enum ControlResponse {
     TryAgainLater,
 
     Register(RegisterResponse),
-    UdpChannel(UdpChannelResponse),
+    UdpChannel(UdpChannelDetails),
     PortMapping(PortMappingResponse),
 }
 
