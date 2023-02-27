@@ -11,7 +11,7 @@ use crate::{
     control::{
         ControlRequest, ControlResponse, KeepAliveRequest, Ping, Pong, PortMappingFound,
         PortMappingRequest, PortMappingResponse, RegisterRequest, RegisterResponse,
-        UdpChannelRequest, UdpChannelDetails,
+        UdpChannelDetails, UdpChannelRequest,
     },
     hmac::HmacSign,
     socket::Socket,

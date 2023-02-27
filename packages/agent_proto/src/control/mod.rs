@@ -6,7 +6,7 @@ mod udp_chnl;
 pub use ping::{Ping, Pong};
 pub use port_map::{PortMappingFound, PortMappingRequest, PortMappingResponse};
 pub use register::{RegisterRequest, RegisterResponse};
-pub use udp_chnl::{UdpChannelRequest, UdpChannelDetails};
+pub use udp_chnl::{UdpChannelDetails, UdpChannelRequest};
 
 use crate::agent::AgentSession;
 
