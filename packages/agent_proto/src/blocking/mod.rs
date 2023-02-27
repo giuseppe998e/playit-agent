@@ -6,7 +6,7 @@ mod en_dec {
     use std::{
         io::Cursor,
         mem::size_of,
-        net::{IpAddr, Ipv4Addr, SocketAddr, SocketAddrV4},
+        net::{IpAddr, Ipv4Addr, SocketAddr, SocketAddrV4, SocketAddrV6},
     };
 
     use rand::random;
@@ -20,7 +20,7 @@ mod en_dec {
             UdpChannelDetails,
         },
         hmac::{signer::HmacSigner, HmacSign},
-        socket::{Port, Protocol, Socket},
+        socket::{Port, Protocol, Socket, SocketFlow, SocketFlowV4, SocketFlowV6, V6_LEN},
     };
 
     #[test]
@@ -303,6 +303,41 @@ mod en_dec {
         // Decode
         let mut buf_cursor = Cursor::new(buf);
         let dec_result = Protocol::read_from(&mut buf_cursor);
+        assert_eq!(data, dec_result.unwrap())
+    }
+
+    #[test]
+    fn test_socketflow_v4() {
+        let mut buf = Vec::<u8>::with_capacity(V6_LEN + 1);
+        let data = SocketFlow::V4(SocketFlowV4::new(
+            SocketAddrV4::new([192, 168, 1, 1].into(), 1324),
+            SocketAddrV4::new([232, 168, 0, 132].into(), 4312),
+        ));
+
+        // Encode
+        assert!(matches!(data.clone().write_into(&mut buf), Ok(_)));
+
+        // Decode
+        let mut buf_cursor = Cursor::new(buf);
+        let dec_result = SocketFlow::read_from(&mut buf_cursor);
+        assert_eq!(data, dec_result.unwrap())
+    }
+
+    #[test]
+    fn test_socketflow_v6() {
+        let mut buf = Vec::<u8>::with_capacity(V6_LEN + 1);
+        let data = SocketFlow::V6(SocketFlowV6::new(
+            SocketAddrV6::new([192, 168, 1, 1, 1, 255, 1, 1].into(), 1324, 6543, 0),
+            SocketAddrV6::new([232, 168, 1, 1, 1, 1, 168, 232].into(), 4312, 6543, 0),
+            6543,
+        ));
+
+        // Encode
+        assert!(matches!(data.clone().write_into(&mut buf), Ok(_)));
+
+        // Decode
+        let mut buf_cursor = Cursor::new(buf);
+        let dec_result = SocketFlow::read_from(&mut buf_cursor);
         assert_eq!(data, dec_result.unwrap())
     }
 }

@@ -2,7 +2,9 @@ use std::io::{Result, Write};
 
 use byteorder::{BigEndian, WriteBytesExt};
 
-use crate::socket::{Port, Protocol, Socket};
+use crate::socket::{
+    Port, Protocol, Socket, SocketFlow, SocketFlowV4, SocketFlowV6, V4_FOOTER_ID_OLD, V6_FOOTER_ID,
+};
 
 use super::MessageEncode;
 
@@ -29,5 +31,47 @@ impl MessageEncode for Port {
 impl MessageEncode for Protocol {
     fn write_into<W: Write>(self, buf: &mut W) -> Result<()> {
         buf.write_u8(self.into())
+    }
+}
+
+// SocketFlow
+impl MessageEncode for SocketFlow {
+    fn write_into<W: Write>(self, buf: &mut W) -> Result<()> {
+        match self {
+            SocketFlow::V4(flow) => {
+                flow.write_into(buf)?;
+                buf.write_u64::<BigEndian>(V4_FOOTER_ID_OLD)
+            }
+            SocketFlow::V6(flow) => {
+                flow.write_into(buf)?;
+                buf.write_u64::<BigEndian>(V6_FOOTER_ID)
+            }
+        }
+    }
+}
+
+impl MessageEncode for SocketFlowV4 {
+    fn write_into<W: Write>(self, buf: &mut W) -> Result<()> {
+        let src = self.src();
+        let dest = self.dest();
+
+        buf.write_u32::<BigEndian>((*src.ip()).into())?;
+        buf.write_u32::<BigEndian>((*dest.ip()).into())?;
+        buf.write_u16::<BigEndian>(src.port())?;
+        buf.write_u16::<BigEndian>(dest.port())
+    }
+}
+
+impl MessageEncode for SocketFlowV6 {
+    fn write_into<W: Write>(self, buf: &mut W) -> Result<()> {
+        let src = self.src();
+        let dest = self.dest();
+        let flowinfo = self.flowinfo();
+
+        buf.write_u128::<BigEndian>((*src.ip()).into())?;
+        buf.write_u128::<BigEndian>((*dest.ip()).into())?;
+        buf.write_u16::<BigEndian>(src.port())?;
+        buf.write_u16::<BigEndian>(dest.port())?;
+        buf.write_u32::<BigEndian>(flowinfo)
     }
 }
