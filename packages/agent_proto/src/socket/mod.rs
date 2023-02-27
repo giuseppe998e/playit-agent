@@ -7,7 +7,7 @@ use std::net::{IpAddr, SocketAddr};
 use serde::{Deserialize, Serialize};
 
 pub use flow::{SocketFlow, SocketFlowV4, SocketFlowV6};
-pub(super) use flow::{V4_FOOTER_ID, V4_FOOTER_ID_OLD, V4_LEN, V6_FOOTER_ID, V6_LEN};
+pub(super) use flow::{V4_BYTES, V4_FOOTER_ID, V4_FOOTER_ID_OLD, V6_BYTES, V6_FOOTER_ID};
 pub use port::{Port, PortRange};
 pub use proto::Protocol;
 

@@ -1,11 +1,11 @@
 use std::net::{SocketAddr, SocketAddrV4, SocketAddrV6};
 
 pub(crate) const V6_FOOTER_ID: u64 = 0x6668_676F_6861_6366;
-pub(crate) const V6_LEN: usize = 40;
+pub(crate) const V6_BYTES: usize = 40;
 
 pub(crate) const V4_FOOTER_ID_OLD: u64 = 0x5CB8_67CF_7881_73B2;
 pub(crate) const V4_FOOTER_ID: u64 = 0x4448_474F_4841_4344;
-pub(crate) const V4_LEN: usize = 12;
+pub(crate) const V4_BYTES: usize = 12;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum SocketFlow {

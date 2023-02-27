@@ -7,8 +7,8 @@ use std::{
 use byteorder::{BigEndian, ReadBytesExt};
 
 use crate::socket::{
-    Port, Protocol, Socket, SocketFlow, SocketFlowV4, SocketFlowV6, V4_FOOTER_ID, V4_FOOTER_ID_OLD,
-    V4_LEN, V6_FOOTER_ID, V6_LEN,
+    Port, Protocol, Socket, SocketFlow, SocketFlowV4, SocketFlowV6, V4_BYTES, V4_FOOTER_ID,
+    V4_FOOTER_ID_OLD, V6_BYTES, V6_FOOTER_ID,
 };
 
 use super::MessageDecode;
@@ -60,44 +60,38 @@ impl MessageDecode for SocketFlow {
     /// `SocketFlowV4` structure. Otherwise, we continue reading the remaining bytes
     /// to obtain the `SocketFlowV6` structure.
     fn read_from<R: Read>(input: &mut R) -> Result<Self> {
-        // Initial length of buffer to read
-        const INIT_LEN: usize = V4_LEN + mem::size_of::<u64>();
+        let mut v4_buf = [0u8; V4_BYTES + mem::size_of::<u64>()];
+        input.read_exact(&mut v4_buf)?;
 
-        // Initialize a buffer to hold the input bytes
-        let mut input_buf = Vec::<u8>::new();
+        let footer_id = {
+            let mut u64_buf = [0u8; 8];
+            let mut footer_id_buf = Cursor::new(&v4_buf[V4_BYTES..]);
+            footer_id_buf.read_exact(&mut u64_buf)?;
+            u64::from_be_bytes(u64_buf)
+        };
 
-        // Parse the `SocketFlowV4` variant
-        // Read `SocketFlowV4` structure plus `footer_id` (20 bytes)
-        input_buf.resize(INIT_LEN, 0);
-        input.read_exact(&mut input_buf)?;
-
-        // Parse `footer_id`
-        let mut footer_id_bytes = &input_buf[V4_LEN..];
-        let footer_id = footer_id_bytes.read_u64::<BigEndian>()?;
-
-        // Check and parse `SocketFlowV4`
         if matches!(footer_id, V4_FOOTER_ID | V4_FOOTER_ID_OLD) {
-            let mut v4_cursor = Cursor::new(&input_buf[..V4_LEN]);
+            let mut v4_cursor = Cursor::new(&v4_buf);
             return SocketFlowV4::read_from(&mut v4_cursor).map(Self::V4);
         }
 
-        // If `footer_id` did not match any `SocketFlowV4` variant,
-        // parse the `SocketFlowV6` variant
-        // Read `SocketFlowV6` structure plus `footer_id` (48 bytes)
-        input_buf.resize(INIT_LEN + V6_LEN - V4_LEN, 0);
-        input.read_exact(&mut input_buf[INIT_LEN..])?;
+        // V6
+        let mut v6_buf = [0u8; V6_BYTES - V4_BYTES];
+        input.read_exact(&mut v6_buf)?;
 
-        // Parse `footer_id`
-        let mut footer_id_bytes = &input_buf[V6_LEN..];
-        let footer_id = footer_id_bytes.read_u64::<BigEndian>()?;
+        let footer_id = {
+            let mut u64_buf = [0u8; 8];
+            let mut footer_id_buf =
+                Cursor::new(&v6_buf[V6_BYTES - V4_BYTES - mem::size_of::<u64>()..]);
+            footer_id_buf.read_exact(&mut u64_buf)?;
+            u64::from_be_bytes(u64_buf)
+        };
 
-        // Check and parse `SocketFlowV6`
         if matches!(footer_id, V6_FOOTER_ID) {
-            let mut v6_cursor = Cursor::new(&input_buf[..V6_LEN]);
+            let mut v6_cursor = Cursor::new(&v4_buf).chain(Cursor::new(&v6_buf));
             return SocketFlowV6::read_from(&mut v6_cursor).map(Self::V6);
         }
 
-        // If `footer_id` did not match any `SocketFlow` variant, return an error
         Err(Error::new(
             ErrorKind::InvalidInput,
             "Invalid input for `SocketFlow`",
