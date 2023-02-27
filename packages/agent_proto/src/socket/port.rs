@@ -17,8 +17,14 @@ impl Port {
             _ => Self::Single(from),
         }
     }
+}
 
-    pub fn into_iter(self) -> Box<dyn Iterator<Item = u16>> {
+impl IntoIterator for Port {
+    type Item = u16;
+
+    type IntoIter = Box<dyn Iterator<Item = Self::Item>>;
+
+    fn into_iter(self) -> Self::IntoIter {
         match self {
             Port::Single(port) => Box::new(iter::once(port)),
             Port::Range(range) => Box::new(range),
@@ -45,8 +51,8 @@ impl From<PortRange> for Port {
     fn from(value: PortRange) -> Self {
         let (from, to) = value.into_inner();
         match (from, to) {
-            _ if from < to => return Self::Range(from..=to),
-            _ => return Self::Single(from),
+            _ if from < to => Self::Range(from..=to),
+            _ => Self::Single(from),
         }
     }
 }
