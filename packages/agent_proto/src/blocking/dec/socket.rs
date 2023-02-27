@@ -64,36 +64,36 @@ impl MessageDecode for SocketFlow {
         const INIT_LEN: usize = V4_LEN + mem::size_of::<u64>();
 
         // Initialize a buffer to hold the input bytes
-        let mut v4_buf = Vec::<u8>::new();
+        let mut input_buf = Vec::<u8>::new();
 
         // Parse the `SocketFlowV4` variant
         // Read `SocketFlowV4` structure plus `footer_id` (20 bytes)
-        v4_buf.resize(INIT_LEN, 0);
-        input.read_exact(&mut v4_buf)?;
+        input_buf.resize(INIT_LEN, 0);
+        input.read_exact(&mut input_buf)?;
 
         // Parse `footer_id`
-        let mut footer_id_bytes = &v4_buf[V4_LEN..];
+        let mut footer_id_bytes = &input_buf[V4_LEN..];
         let footer_id = footer_id_bytes.read_u64::<BigEndian>()?;
 
         // Check and parse `SocketFlowV4`
         if matches!(footer_id, V4_FOOTER_ID | V4_FOOTER_ID_OLD) {
-            let mut v4_cursor = Cursor::new(&v4_buf[..V4_LEN]);
+            let mut v4_cursor = Cursor::new(&input_buf[..V4_LEN]);
             return SocketFlowV4::read_from(&mut v4_cursor).map(Self::V4);
         }
 
         // If `footer_id` did not match any `SocketFlowV4` variant,
         // parse the `SocketFlowV6` variant
         // Read `SocketFlowV6` structure plus `footer_id` (48 bytes)
-        v4_buf.resize(INIT_LEN + V6_LEN - V4_LEN, 0);
-        input.read_exact(&mut v4_buf[INIT_LEN..])?;
+        input_buf.resize(INIT_LEN + V6_LEN - V4_LEN, 0);
+        input.read_exact(&mut input_buf[INIT_LEN..])?;
 
         // Parse `footer_id`
-        let mut footer_id_bytes = &v4_buf[V6_LEN..];
+        let mut footer_id_bytes = &input_buf[V6_LEN..];
         let footer_id = footer_id_bytes.read_u64::<BigEndian>()?;
 
         // Check and parse `SocketFlowV6`
         if matches!(footer_id, V6_FOOTER_ID) {
-            let mut v6_cursor = Cursor::new(&v4_buf[..V6_LEN]);
+            let mut v6_cursor = Cursor::new(&input_buf[..V6_LEN]);
             return SocketFlowV6::read_from(&mut v6_cursor).map(Self::V6);
         }
 
