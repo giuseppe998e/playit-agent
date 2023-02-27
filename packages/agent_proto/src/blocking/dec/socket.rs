@@ -64,7 +64,7 @@ impl MessageDecode for SocketFlow {
         input.read_exact(&mut v4_buf)?;
 
         let footer_id = {
-            let mut u64_buf = [0u8; 8];
+            let mut u64_buf = [0u8; mem::size_of::<u64>()];
             let mut footer_id_buf = Cursor::new(&v4_buf[V4_BYTES..]);
             footer_id_buf.read_exact(&mut u64_buf)?;
             u64::from_be_bytes(u64_buf)
@@ -80,7 +80,7 @@ impl MessageDecode for SocketFlow {
         input.read_exact(&mut v6_buf)?;
 
         let footer_id = {
-            let mut u64_buf = [0u8; 8];
+            let mut u64_buf = [0u8; mem::size_of::<u64>()];
             let mut footer_id_buf =
                 Cursor::new(&v6_buf[V6_BYTES - V4_BYTES - mem::size_of::<u64>()..]);
             footer_id_buf.read_exact(&mut u64_buf)?;
