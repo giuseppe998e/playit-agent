@@ -11,7 +11,7 @@ use crate::{
     control::{
         ControlRequest, ControlResponse, KeepAliveRequest, Ping, Pong, PortMappingFound,
         PortMappingRequest, PortMappingResponse, RegisterRequest, RegisterResponse,
-        UdpChannelRequest, UdpChannelResponse,
+        UdpChannelRequest, UdpChannelDetails,
     },
     hmac::HmacSign,
     socket::Socket,
@@ -50,7 +50,7 @@ impl MessageDecode for ControlResponse {
             Self::TRY_AGAIN_LATER_IDX => Ok(Self::TryAgainLater),
 
             Self::REGISTER_IDX => RegisterResponse::read_from(input).map(Self::Register),
-            Self::UPD_CHANNEL_IDX => UdpChannelResponse::read_from(input).map(Self::UdpChannel),
+            Self::UPD_CHANNEL_IDX => UdpChannelDetails::read_from(input).map(Self::UdpChannel),
             Self::PORT_MAPPING_IDX => PortMappingResponse::read_from(input).map(Self::PortMapping),
 
             v => Err(Error::new(
@@ -162,7 +162,7 @@ impl MessageDecode for RegisterResponse {
 }
 
 // udp_chnl.rs
-impl MessageDecode for UdpChannelResponse {
+impl MessageDecode for UdpChannelDetails {
     fn read_from<R: Read>(input: &mut R) -> Result<Self> {
         let tunnel_addr = SocketAddr::read_from(input)?;
         let token = Vec::<u8>::read_from(input)?;

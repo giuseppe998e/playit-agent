@@ -17,7 +17,7 @@ mod en_dec {
         control::{
             ControlRequest, ControlResponse, KeepAliveRequest, Ping, Pong, PortMappingFound,
             PortMappingRequest, PortMappingResponse, RegisterRequest, RegisterResponse,
-            UdpChannelResponse,
+            UdpChannelDetails,
         },
         hmac::{signer::HmacSigner, HmacSign},
         socket::{Port, Protocol, Socket},
@@ -222,9 +222,9 @@ mod en_dec {
     }
 
     #[test]
-    fn test_control_udpchannelresponse() {
-        let mut buf = Vec::<u8>::with_capacity(size_of::<UdpChannelResponse>());
-        let data = UdpChannelResponse {
+    fn test_control_UdpChannelDetails() {
+        let mut buf = Vec::<u8>::with_capacity(size_of::<UdpChannelDetails>());
+        let data = UdpChannelDetails {
             tunnel_addr: SocketAddr::V4(SocketAddrV4::new(Ipv4Addr::LOCALHOST, random())),
             token: Default::default(),
         };
@@ -234,7 +234,7 @@ mod en_dec {
 
         // Decode
         let mut buf_cursor = Cursor::new(buf);
-        let dec_result = UdpChannelResponse::read_from(&mut buf_cursor);
+        let dec_result = UdpChannelDetails::read_from(&mut buf_cursor);
         assert_eq!(data, dec_result.unwrap())
     }
 

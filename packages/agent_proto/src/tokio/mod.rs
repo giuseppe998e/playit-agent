@@ -228,7 +228,7 @@ mod en_dec {
     }
 
     #[test]
-    fn test_control_udpchannelresponse() {
+    fn test_control_udpchanneldetails() {
         let mut buf = Vec::<u8>::with_capacity(size_of::<UdpChannelDetails>());
         let data = UdpChannelDetails {
             tunnel_addr: SocketAddr::V4(SocketAddrV4::new(Ipv4Addr::LOCALHOST, random())),

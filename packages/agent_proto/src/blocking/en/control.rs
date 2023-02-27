@@ -4,7 +4,7 @@ use byteorder::{BigEndian, WriteBytesExt};
 
 use crate::control::{
     ControlRequest, ControlResponse, Ping, Pong, PortMappingFound, PortMappingRequest,
-    PortMappingResponse, RegisterRequest, RegisterResponse, UdpChannelResponse,
+    PortMappingResponse, RegisterRequest, RegisterResponse, UdpChannelDetails,
 };
 
 use super::MessageEncode;
@@ -138,7 +138,7 @@ impl MessageEncode for RegisterResponse {
 }
 
 // udp_chnl.rs
-impl MessageEncode for UdpChannelResponse {
+impl MessageEncode for UdpChannelDetails {
     fn write_into<W: Write>(self, buf: &mut W) -> Result<()> {
         self.tunnel_addr.write_into(buf)?;
         self.token.write_into(buf)
