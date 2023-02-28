@@ -9,6 +9,4 @@ pub mod blocking;
 
 // Async bytes encoding & decoding
 #[cfg(feature = "tokio")]
-mod tokio;
-#[cfg(feature = "tokio")]
-pub use crate::tokio::{dec, en};
+pub mod tokio;
