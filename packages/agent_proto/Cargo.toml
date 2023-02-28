@@ -11,11 +11,11 @@ blocking = ["dep:byteorder"]
 
 [dependencies]
 async-trait = { workspace = true, optional = true }
-byteorder = { workspace = true, optional = true }
-hmac = { workspace = true }
+byteorder = { workspace = true, default-features = false, optional = true }
+hmac = { workspace = true, default-features = false }
 serde = { workspace = true, default-features = false, features = ["derive"] }
-sha2 = { workspace = true }
-tokio = { workspace = true, default-features = false, features = ["io-util"], optional = true }
+sha2 = { workspace = true, default-features = false }
+tokio = { workspace = true, features = ["io-util"], optional = true }
 
 [dev-dependencies]
 rand = { workspace = true }
