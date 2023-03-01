@@ -10,7 +10,6 @@ pub const FLOW_V4_ID_OLD: u64 = 0x5CB8_67CF_7881_73B2;
 pub const FLOW_ID_BYTES: usize = mem::size_of::<u64>();
 pub const FLOW_V4_BYTES: usize = 12;
 pub const FLOW_V6_BYTES: usize = 40;
-
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum SocketFlow {
     V4(SocketFlowV4),

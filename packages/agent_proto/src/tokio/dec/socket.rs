@@ -7,8 +7,8 @@ use async_trait::async_trait;
 use tokio::io::AsyncReadExt;
 
 use crate::socket::{
-    Port, Protocol, Socket, SocketFlow, SocketFlowV4, SocketFlowV6, FLOW_ID_BYTES,
-    FLOW_V4_BYTES, FLOW_V4_ID, FLOW_V4_ID_OLD, FLOW_V6_BYTES, FLOW_V6_ID,
+    Port, Protocol, Socket, SocketFlow, SocketFlowV4, SocketFlowV6, FLOW_ID_BYTES, FLOW_V4_BYTES,
+    FLOW_V4_ID, FLOW_V4_ID_OLD, FLOW_V6_BYTES, FLOW_V6_ID,
 };
 
 use super::AsyncMessageDecode;
