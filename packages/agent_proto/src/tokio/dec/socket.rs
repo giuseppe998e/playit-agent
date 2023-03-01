@@ -7,8 +7,8 @@ use async_trait::async_trait;
 use tokio::io::AsyncReadExt;
 
 use crate::socket::{
-    Port, Protocol, Socket, SocketFlow, SocketFlowV4, SocketFlowV6, FLOW_ID_BYTES, FLOW_V4_BYTES,
-    FLOW_V4_ID, FLOW_V4_ID_OLD, FLOW_V6_BYTES, FLOW_V6_ID,
+    Port, Protocol, Socket, SocketFlow, SocketFlowV4, SocketFlowV6, FLOW_ID_SIZE, FLOW_V4_ID,
+    FLOW_V4_ID_OLD, FLOW_V6_ID,
 };
 
 use super::AsyncMessageDecode;
@@ -76,12 +76,12 @@ impl AsyncMessageDecode for SocketFlow {
     where
         R: AsyncReadExt + Unpin + Send,
     {
-        let mut v4_buf = [0u8; FLOW_V4_BYTES + FLOW_ID_BYTES];
+        let mut v4_buf = [0u8; SocketFlowV4::size() + FLOW_ID_SIZE];
         input.read_exact(&mut v4_buf).await?;
 
         let footer_id = {
-            let mut u64_buf = [0u8; FLOW_ID_BYTES];
-            let mut footer_id_buf = Cursor::new(&v4_buf[FLOW_V4_BYTES..]);
+            let mut u64_buf = [0u8; FLOW_ID_SIZE];
+            let mut footer_id_buf = Cursor::new(&v4_buf[SocketFlowV4::size()..]);
             footer_id_buf.read_exact(&mut u64_buf).await?;
             u64::from_be_bytes(u64_buf)
         };
@@ -92,13 +92,13 @@ impl AsyncMessageDecode for SocketFlow {
         }
 
         // V6
-        let mut v6_buf = [0u8; FLOW_V6_BYTES - FLOW_V4_BYTES];
+        let mut v6_buf = [0u8; SocketFlowV6::size() - SocketFlowV4::size()];
         input.read_exact(&mut v6_buf).await?;
 
         let footer_id = {
-            let mut u64_buf = [0u8; FLOW_ID_BYTES];
+            let mut u64_buf = [0u8; FLOW_ID_SIZE];
             let mut footer_id_buf =
-                Cursor::new(&v6_buf[FLOW_V6_BYTES - FLOW_V4_BYTES - FLOW_ID_BYTES..]);
+                Cursor::new(&v6_buf[SocketFlowV6::size() - SocketFlowV4::size() - FLOW_ID_SIZE..]);
             footer_id_buf.read_exact(&mut u64_buf).await?;
             u64::from_be_bytes(u64_buf)
         };

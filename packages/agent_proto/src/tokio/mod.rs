@@ -5,7 +5,7 @@ pub mod en;
 mod en_dec {
     use std::{
         io::Cursor,
-        mem::size_of,
+        mem::{self, size_of},
         net::{IpAddr, Ipv4Addr, SocketAddr, SocketAddrV4, SocketAddrV6},
     };
 
@@ -20,7 +20,7 @@ mod en_dec {
             UdpChannelDetails,
         },
         hmac::{signer::HmacSigner, HmacSign},
-        socket::{Port, Protocol, Socket, SocketFlow, SocketFlowV4, SocketFlowV6, FLOW_V6_BYTES},
+        socket::{Port, Protocol, Socket, SocketFlow, SocketFlowV4, SocketFlowV6},
     };
 
     #[tokio::test]
@@ -308,7 +308,7 @@ mod en_dec {
 
     #[tokio::test]
     async fn test_socketflow_v4() {
-        let mut buf = Vec::<u8>::with_capacity(FLOW_V6_BYTES + 1);
+        let mut buf = Vec::<u8>::with_capacity(SocketFlowV6::size() + mem::size_of::<u64>());
         let data = SocketFlow::V4(SocketFlowV4::new(
             SocketAddrV4::new([192, 168, 1, 1].into(), 1324),
             SocketAddrV4::new([232, 168, 0, 132].into(), 4312),
@@ -325,7 +325,7 @@ mod en_dec {
 
     #[tokio::test]
     async fn test_socketflow_v6() {
-        let mut buf = Vec::<u8>::with_capacity(FLOW_V6_BYTES + 1);
+        let mut buf = Vec::<u8>::with_capacity(SocketFlowV6::size() + mem::size_of::<u64>());
         let data = SocketFlow::V6(SocketFlowV6::new(
             SocketAddrV6::new([192, 168, 1, 1, 1, 255, 1, 1].into(), 1324, 6543, 0),
             SocketAddrV6::new([232, 168, 1, 1, 1, 1, 168, 232].into(), 4312, 6543, 0),

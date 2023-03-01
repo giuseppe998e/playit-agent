@@ -7,9 +7,10 @@ pub const FLOW_V6_ID: u64 = 0x6668_676F_6861_6366;
 pub const FLOW_V4_ID: u64 = 0x4448_474F_4841_4344;
 pub const FLOW_V4_ID_OLD: u64 = 0x5CB8_67CF_7881_73B2;
 
-pub const FLOW_ID_BYTES: usize = mem::size_of::<u64>();
-pub const FLOW_V4_BYTES: usize = 12;
-pub const FLOW_V6_BYTES: usize = 40;
+pub const FLOW_ID_SIZE: usize = mem::size_of::<u64>();
+const FLOW_V4_SIZE: usize = 12;
+const FLOW_V6_SIZE: usize = 40;
+
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum SocketFlow {
     V4(SocketFlowV4),
@@ -59,6 +60,15 @@ impl SocketFlow {
         }
     }
 
+    pub fn size(&self) -> usize {
+        let inner = match self {
+            SocketFlow::V4(_) => SocketFlowV4::size(),
+            SocketFlow::V6(_) => SocketFlowV6::size(),
+        };
+
+        inner + FLOW_ID_SIZE
+    }
+
     pub fn is_ipv4(&self) -> bool {
         matches!(self, Self::V4(_))
     }
@@ -86,6 +96,10 @@ impl SocketFlowV4 {
             src: self.dest,
             dest: self.src,
         }
+    }
+
+    pub const fn size() -> usize {
+        FLOW_V4_SIZE
     }
 }
 
@@ -122,6 +136,10 @@ impl SocketFlowV6 {
             dest: self.src,
             flowinfo: self.flowinfo,
         }
+    }
+
+    pub const fn size() -> usize {
+        FLOW_V6_SIZE
     }
 }
 
