@@ -1,14 +1,13 @@
 use std::{
     io::{Cursor, Error, ErrorKind, Read, Result},
-    mem,
     net::{IpAddr, SocketAddrV4, SocketAddrV6},
 };
 
 use byteorder::{BigEndian, ReadBytesExt};
 
 use crate::socket::{
-    Port, Protocol, Socket, SocketFlow, SocketFlowV4, SocketFlowV6, V4_BYTES, V4_FOOTER_ID,
-    V4_FOOTER_ID_OLD, V6_BYTES, V6_FOOTER_ID,
+    Port, Protocol, Socket, SocketFlow, SocketFlowV4, SocketFlowV6, FLOW_FOOTER_BYTES,
+    FLOW_V4_BYTES, FLOW_V4_FOOTER_ID, FLOW_V4_FOOTER_ID_OLD, FLOW_V6_BYTES, FLOW_V6_FOOTER_ID,
 };
 
 use super::MessageDecode;
@@ -60,34 +59,30 @@ impl MessageDecode for SocketFlow {
     /// `SocketFlowV4` structure. Otherwise, we continue reading the remaining bytes
     /// to obtain the `SocketFlowV6` structure.
     fn read_from<R: Read>(input: &mut R) -> Result<Self> {
-        let mut v4_buf = [0u8; V4_BYTES + mem::size_of::<u64>()];
+        let mut v4_buf = [0u8; FLOW_V4_BYTES + FLOW_FOOTER_BYTES];
         input.read_exact(&mut v4_buf)?;
 
         let footer_id = {
-            let mut u64_buf = [0u8; mem::size_of::<u64>()];
-            let mut footer_id_buf = Cursor::new(&v4_buf[V4_BYTES..]);
-            footer_id_buf.read_exact(&mut u64_buf)?;
-            u64::from_be_bytes(u64_buf)
+            let mut footer_id_buf = Cursor::new(&v4_buf[FLOW_V4_BYTES..]);
+            footer_id_buf.read_u64::<BigEndian>()?
         };
 
-        if matches!(footer_id, V4_FOOTER_ID | V4_FOOTER_ID_OLD) {
+        if matches!(footer_id, FLOW_V4_FOOTER_ID | FLOW_V4_FOOTER_ID_OLD) {
             let mut v4_cursor = Cursor::new(&v4_buf);
             return SocketFlowV4::read_from(&mut v4_cursor).map(Self::V4);
         }
 
         // V6
-        let mut v6_buf = [0u8; V6_BYTES - V4_BYTES];
+        let mut v6_buf = [0u8; FLOW_V6_BYTES - FLOW_V4_BYTES];
         input.read_exact(&mut v6_buf)?;
 
         let footer_id = {
-            let mut u64_buf = [0u8; mem::size_of::<u64>()];
             let mut footer_id_buf =
-                Cursor::new(&v6_buf[V6_BYTES - V4_BYTES - mem::size_of::<u64>()..]);
-            footer_id_buf.read_exact(&mut u64_buf)?;
-            u64::from_be_bytes(u64_buf)
+                Cursor::new(&v6_buf[FLOW_V6_BYTES - FLOW_V4_BYTES - FLOW_FOOTER_BYTES..]);
+            footer_id_buf.read_u64::<BigEndian>()?
         };
 
-        if matches!(footer_id, V6_FOOTER_ID) {
+        if matches!(footer_id, FLOW_V6_FOOTER_ID) {
             let mut v6_cursor = Cursor::new(&v4_buf).chain(Cursor::new(&v6_buf));
             return SocketFlowV6::read_from(&mut v6_cursor).map(Self::V6);
         }

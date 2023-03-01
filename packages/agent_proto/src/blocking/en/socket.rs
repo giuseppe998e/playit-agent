@@ -3,7 +3,8 @@ use std::io::{Result, Write};
 use byteorder::{BigEndian, WriteBytesExt};
 
 use crate::socket::{
-    Port, Protocol, Socket, SocketFlow, SocketFlowV4, SocketFlowV6, V4_FOOTER_ID_OLD, V6_FOOTER_ID,
+    Port, Protocol, Socket, SocketFlow, SocketFlowV4, SocketFlowV6, FLOW_V4_FOOTER_ID_OLD,
+    FLOW_V6_FOOTER_ID,
 };
 
 use super::MessageEncode;
@@ -40,11 +41,11 @@ impl MessageEncode for SocketFlow {
         match self {
             SocketFlow::V4(flow) => {
                 flow.write_into(buf)?;
-                buf.write_u64::<BigEndian>(V4_FOOTER_ID_OLD)
+                buf.write_u64::<BigEndian>(FLOW_V4_FOOTER_ID_OLD)
             }
             SocketFlow::V6(flow) => {
                 flow.write_into(buf)?;
-                buf.write_u64::<BigEndian>(V6_FOOTER_ID)
+                buf.write_u64::<BigEndian>(FLOW_V6_FOOTER_ID)
             }
         }
     }

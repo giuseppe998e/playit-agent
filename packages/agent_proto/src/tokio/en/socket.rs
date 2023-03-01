@@ -4,7 +4,8 @@ use async_trait::async_trait;
 use tokio::io::AsyncWriteExt;
 
 use crate::socket::{
-    Port, Protocol, Socket, SocketFlow, SocketFlowV4, SocketFlowV6, V4_FOOTER_ID_OLD, V6_FOOTER_ID,
+    Port, Protocol, Socket, SocketFlow, SocketFlowV4, SocketFlowV6, FLOW_V4_FOOTER_ID_OLD,
+    FLOW_V6_FOOTER_ID,
 };
 
 use super::AsyncMessageEncode;
@@ -57,11 +58,11 @@ impl AsyncMessageEncode for SocketFlow {
         match self {
             SocketFlow::V4(flow) => {
                 flow.write_into(buf).await?;
-                buf.write_u64(V4_FOOTER_ID_OLD).await
+                buf.write_u64(FLOW_V4_FOOTER_ID_OLD).await
             }
             SocketFlow::V6(flow) => {
                 flow.write_into(buf).await?;
-                buf.write_u64(V6_FOOTER_ID).await
+                buf.write_u64(FLOW_V6_FOOTER_ID).await
             }
         }
     }
