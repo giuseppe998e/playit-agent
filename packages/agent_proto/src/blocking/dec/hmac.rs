@@ -5,7 +5,7 @@ use crate::hmac::HmacSign;
 
 // XXX Not generic on "Digest" because there is no method to distinguish them
 impl super::MessageDecode for HmacSign<Sha256> {
-    fn read_from<R: ::std::io::Read>(input: &mut R) -> ::std::io::Result<Self> {
+    fn read_from<R: ::std::io::Read + ?Sized>(input: &mut R) -> ::std::io::Result<Self> {
         let mut buf = [0u8; Self::BYTES];
         input.read_exact(&mut buf)?;
 

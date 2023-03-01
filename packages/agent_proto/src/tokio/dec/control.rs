@@ -25,7 +25,7 @@ use super::AsyncMessageDecode;
 impl AsyncMessageDecode for ControlRequest {
     async fn read_from<R>(input: &mut R) -> Result<Self>
     where
-        R: AsyncReadExt + Unpin + Send,
+        R: AsyncReadExt + ?Sized + Unpin + Send,
     {
         match input.read_u32().await? as u8 {
             Self::PING_IDX => Ping::read_from(input).await.map(Self::Ping),
@@ -54,7 +54,7 @@ impl AsyncMessageDecode for ControlRequest {
 impl AsyncMessageDecode for ControlResponse {
     async fn read_from<R>(input: &mut R) -> Result<Self>
     where
-        R: AsyncReadExt + Unpin + Send,
+        R: AsyncReadExt + ?Sized + Unpin + Send,
     {
         match input.read_u32().await? as u8 {
             Self::PONG_IDX => Pong::read_from(input).await.map(Self::Pong),
@@ -85,7 +85,7 @@ impl AsyncMessageDecode for ControlResponse {
 impl AsyncMessageDecode for Ping {
     async fn read_from<R>(input: &mut R) -> Result<Self>
     where
-        R: AsyncReadExt + Unpin + Send,
+        R: AsyncReadExt + ?Sized + Unpin + Send,
     {
         let now = input.read_u64().await?;
         let session = Option::<AgentSession>::read_from(input).await?;
@@ -98,7 +98,7 @@ impl AsyncMessageDecode for Ping {
 impl AsyncMessageDecode for Pong {
     async fn read_from<R>(input: &mut R) -> Result<Self>
     where
-        R: AsyncReadExt + Unpin + Send,
+        R: AsyncReadExt + ?Sized + Unpin + Send,
     {
         let request_now = input.read_u64().await?;
         let server_now = input.read_u64().await?;
@@ -125,7 +125,7 @@ impl AsyncMessageDecode for Pong {
 impl AsyncMessageDecode for PortMappingRequest {
     async fn read_from<R>(input: &mut R) -> Result<Self>
     where
-        R: AsyncReadExt + Unpin + Send,
+        R: AsyncReadExt + ?Sized + Unpin + Send,
     {
         let session = AgentSession::read_from(input).await?;
         let socket = Socket::read_from(input).await?;
@@ -138,7 +138,7 @@ impl AsyncMessageDecode for PortMappingRequest {
 impl AsyncMessageDecode for PortMappingResponse {
     async fn read_from<R>(input: &mut R) -> Result<Self>
     where
-        R: AsyncReadExt + Unpin + Send,
+        R: AsyncReadExt + ?Sized + Unpin + Send,
     {
         let socket = Socket::read_from(input).await?;
         let found = Option::<PortMappingFound>::read_from(input).await?;
@@ -151,7 +151,7 @@ impl AsyncMessageDecode for PortMappingResponse {
 impl AsyncMessageDecode for PortMappingFound {
     async fn read_from<R>(input: &mut R) -> Result<Self>
     where
-        R: AsyncReadExt + Unpin + Send,
+        R: AsyncReadExt + ?Sized + Unpin + Send,
     {
         match input.read_u32().await? as u8 {
             Self::TO_AGENT_IDX => AgentSession::read_from(input).await.map(Self::ToAgent),
@@ -170,7 +170,7 @@ impl AsyncMessageDecode for PortMappingFound {
 impl AsyncMessageDecode for RegisterRequest {
     async fn read_from<R>(input: &mut R) -> Result<Self>
     where
-        R: AsyncReadExt + Unpin + Send,
+        R: AsyncReadExt + ?Sized + Unpin + Send,
     {
         let account_id = input.read_u64().await?;
         let agent_id = input.read_u64().await?;
@@ -196,7 +196,7 @@ impl AsyncMessageDecode for RegisterRequest {
 impl AsyncMessageDecode for RegisterResponse {
     async fn read_from<R>(input: &mut R) -> Result<Self>
     where
-        R: AsyncReadExt + Unpin + Send,
+        R: AsyncReadExt + ?Sized + Unpin + Send,
     {
         let session = AgentSession::read_from(input).await?;
         let expires_at = input.read_u64().await?;
@@ -213,7 +213,7 @@ impl AsyncMessageDecode for RegisterResponse {
 impl AsyncMessageDecode for UdpChannelDetails {
     async fn read_from<R>(input: &mut R) -> Result<Self>
     where
-        R: AsyncReadExt + Unpin + Send,
+        R: AsyncReadExt + ?Sized + Unpin + Send,
     {
         let tunnel_addr = SocketAddr::read_from(input).await?;
         let token = Vec::<u8>::read_from(input).await?;

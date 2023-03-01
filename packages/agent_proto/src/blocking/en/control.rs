@@ -11,7 +11,7 @@ use super::MessageEncode;
 
 // mod.rs
 impl MessageEncode for ControlRequest {
-    fn write_into<W: Write>(self, buf: &mut W) -> Result<()> {
+    fn write_into<W: Write + ?Sized>(self, buf: &mut W) -> Result<()> {
         match self {
             Self::Ping(req) => {
                 buf.write_u32::<BigEndian>(Self::PING_IDX as u32)?;
@@ -40,7 +40,7 @@ impl MessageEncode for ControlRequest {
 }
 
 impl MessageEncode for ControlResponse {
-    fn write_into<W: Write>(self, buf: &mut W) -> Result<()> {
+    fn write_into<W: Write + ?Sized>(self, buf: &mut W) -> Result<()> {
         match self {
             Self::Pong(resp) => {
                 buf.write_u32::<BigEndian>(Self::PONG_IDX as u32)?;
@@ -72,14 +72,14 @@ impl MessageEncode for ControlResponse {
 
 // ping.rs
 impl MessageEncode for Ping {
-    fn write_into<W: Write>(self, buf: &mut W) -> Result<()> {
+    fn write_into<W: Write + ?Sized>(self, buf: &mut W) -> Result<()> {
         buf.write_u64::<BigEndian>(self.now)?;
         self.session.write_into(buf)
     }
 }
 
 impl MessageEncode for Pong {
-    fn write_into<W: Write>(self, buf: &mut W) -> Result<()> {
+    fn write_into<W: Write + ?Sized>(self, buf: &mut W) -> Result<()> {
         buf.write_u64::<BigEndian>(self.request_now)?;
         buf.write_u64::<BigEndian>(self.server_now)?;
         buf.write_u64::<BigEndian>(self.server_id)?;
@@ -92,21 +92,21 @@ impl MessageEncode for Pong {
 
 // port_map.rs
 impl MessageEncode for PortMappingRequest {
-    fn write_into<W: Write>(self, buf: &mut W) -> Result<()> {
+    fn write_into<W: Write + ?Sized>(self, buf: &mut W) -> Result<()> {
         self.session.write_into(buf)?;
         self.socket.write_into(buf)
     }
 }
 
 impl MessageEncode for PortMappingResponse {
-    fn write_into<W: Write>(self, buf: &mut W) -> Result<()> {
+    fn write_into<W: Write + ?Sized>(self, buf: &mut W) -> Result<()> {
         self.socket.write_into(buf)?;
         self.found.write_into(buf)
     }
 }
 
 impl MessageEncode for PortMappingFound {
-    fn write_into<W: Write>(self, buf: &mut W) -> Result<()> {
+    fn write_into<W: Write + ?Sized>(self, buf: &mut W) -> Result<()> {
         match self {
             Self::ToAgent(resp) => {
                 buf.write_u32::<BigEndian>(Self::TO_AGENT_IDX as u32)?;
@@ -119,7 +119,7 @@ impl MessageEncode for PortMappingFound {
 
 // register.rs
 impl MessageEncode for RegisterRequest {
-    fn write_into<W: Write>(self, buf: &mut W) -> Result<()> {
+    fn write_into<W: Write + ?Sized>(self, buf: &mut W) -> Result<()> {
         buf.write_u64::<BigEndian>(self.account_id)?;
         buf.write_u64::<BigEndian>(self.agent_id)?;
         buf.write_u64::<BigEndian>(self.agent_version)?;
@@ -131,7 +131,7 @@ impl MessageEncode for RegisterRequest {
 }
 
 impl MessageEncode for RegisterResponse {
-    fn write_into<W: Write>(self, buf: &mut W) -> Result<()> {
+    fn write_into<W: Write + ?Sized>(self, buf: &mut W) -> Result<()> {
         self.session.write_into(buf)?;
         buf.write_u64::<BigEndian>(self.expires_at)
     }
@@ -139,7 +139,7 @@ impl MessageEncode for RegisterResponse {
 
 // udp_chnl.rs
 impl MessageEncode for UdpChannelDetails {
-    fn write_into<W: Write>(self, buf: &mut W) -> Result<()> {
+    fn write_into<W: Write + ?Sized>(self, buf: &mut W) -> Result<()> {
         self.tunnel_addr.write_into(buf)?;
         self.token.write_into(buf)
     }

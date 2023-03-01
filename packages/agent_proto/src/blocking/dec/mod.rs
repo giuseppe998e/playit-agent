@@ -4,25 +4,25 @@ mod hmac;
 mod socket;
 
 use std::{
-    io::{Error, ErrorKind, Read, Result},
+    io::{self, Error, ErrorKind, Read, Result},
     net::{IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr, SocketAddrV4, SocketAddrV6},
 };
 
 use byteorder::{BigEndian, ReadBytesExt};
 
 pub trait MessageDecode: Sized {
-    fn read_from<R: ::std::io::Read>(input: &mut R) -> ::std::io::Result<Self>;
+    fn read_from<R: Read + ?Sized>(input: &mut R) -> io::Result<Self>;
 }
 
 impl MessageDecode for u64 {
     #[inline]
-    fn read_from<R: Read>(input: &mut R) -> Result<Self> {
+    fn read_from<R: Read + ?Sized>(input: &mut R) -> Result<Self> {
         input.read_u64::<BigEndian>()
     }
 }
 
 impl<T: MessageDecode> MessageDecode for Option<T> {
-    fn read_from<R: Read>(input: &mut R) -> Result<Self> {
+    fn read_from<R: Read + ?Sized>(input: &mut R) -> Result<Self> {
         match input.read_u8()? {
             0 => Ok(None),
             1 => T::read_from(input).map(Some),
@@ -36,7 +36,7 @@ impl<T: MessageDecode> MessageDecode for Option<T> {
 }
 
 impl MessageDecode for Vec<u8> {
-    fn read_from<R: Read>(input: &mut R) -> Result<Self> {
+    fn read_from<R: Read + ?Sized>(input: &mut R) -> Result<Self> {
         let capacity = input.read_u64::<BigEndian>()? as usize;
         let mut vec = vec![0u8; capacity];
 
@@ -46,7 +46,7 @@ impl MessageDecode for Vec<u8> {
 }
 
 impl<T: MessageDecode> MessageDecode for Vec<T> {
-    fn read_from<R: Read>(input: &mut R) -> Result<Self> {
+    fn read_from<R: Read + ?Sized>(input: &mut R) -> Result<Self> {
         let capacity = input.read_u64::<BigEndian>()? as usize;
         let mut vec = Vec::with_capacity(capacity);
 
@@ -60,7 +60,7 @@ impl<T: MessageDecode> MessageDecode for Vec<T> {
 }
 
 impl MessageDecode for SocketAddr {
-    fn read_from<R: Read>(input: &mut R) -> Result<Self> {
+    fn read_from<R: Read + ?Sized>(input: &mut R) -> Result<Self> {
         match input.read_u8()? {
             4 => Ok(SocketAddr::V4(SocketAddrV4::new(
                 Ipv4Addr::read_from(input)?,
@@ -82,7 +82,7 @@ impl MessageDecode for SocketAddr {
 }
 
 impl MessageDecode for IpAddr {
-    fn read_from<R: Read>(input: &mut R) -> Result<Self> {
+    fn read_from<R: Read + ?Sized>(input: &mut R) -> Result<Self> {
         match input.read_u8()? {
             4 => Ipv4Addr::read_from(input).map(IpAddr::V4),
             6 => Ipv6Addr::read_from(input).map(IpAddr::V6),
@@ -95,7 +95,7 @@ impl MessageDecode for IpAddr {
 }
 
 impl MessageDecode for Ipv4Addr {
-    fn read_from<R: Read>(input: &mut R) -> Result<Self> {
+    fn read_from<R: Read + ?Sized>(input: &mut R) -> Result<Self> {
         let mut bytes = [0u8; 4];
 
         input.read_exact(&mut bytes)?;
@@ -104,7 +104,7 @@ impl MessageDecode for Ipv4Addr {
 }
 
 impl MessageDecode for Ipv6Addr {
-    fn read_from<R: Read>(input: &mut R) -> Result<Self> {
+    fn read_from<R: Read + ?Sized>(input: &mut R) -> Result<Self> {
         let mut bytes = [0u8; 16];
 
         input.read_exact(&mut bytes)?;

@@ -15,7 +15,7 @@ use super::AsyncMessageEncode;
 impl AsyncMessageEncode for ControlRequest {
     async fn write_into<W>(self, buf: &mut W) -> Result<()>
     where
-        W: AsyncWriteExt + Unpin + Send,
+        W: AsyncWriteExt + ?Sized + Unpin + Send,
     {
         match self {
             Self::Ping(req) => {
@@ -48,7 +48,7 @@ impl AsyncMessageEncode for ControlRequest {
 impl AsyncMessageEncode for ControlResponse {
     async fn write_into<W>(self, buf: &mut W) -> Result<()>
     where
-        W: AsyncWriteExt + Unpin + Send,
+        W: AsyncWriteExt + ?Sized + Unpin + Send,
     {
         match self {
             Self::Pong(resp) => {
@@ -82,7 +82,7 @@ impl AsyncMessageEncode for ControlResponse {
 impl AsyncMessageEncode for Ping {
     async fn write_into<W>(self, buf: &mut W) -> Result<()>
     where
-        W: AsyncWriteExt + Unpin + Send,
+        W: AsyncWriteExt + ?Sized + Unpin + Send,
     {
         buf.write_u64(self.now).await?;
         self.session.write_into(buf).await
@@ -93,7 +93,7 @@ impl AsyncMessageEncode for Ping {
 impl AsyncMessageEncode for Pong {
     async fn write_into<W>(self, buf: &mut W) -> Result<()>
     where
-        W: AsyncWriteExt + Unpin + Send,
+        W: AsyncWriteExt + ?Sized + Unpin + Send,
     {
         buf.write_u64(self.request_now).await?;
         buf.write_u64(self.server_now).await?;
@@ -110,7 +110,7 @@ impl AsyncMessageEncode for Pong {
 impl AsyncMessageEncode for PortMappingRequest {
     async fn write_into<W>(self, buf: &mut W) -> Result<()>
     where
-        W: AsyncWriteExt + Unpin + Send,
+        W: AsyncWriteExt + ?Sized + Unpin + Send,
     {
         self.session.write_into(buf).await?;
         self.socket.write_into(buf).await
@@ -121,7 +121,7 @@ impl AsyncMessageEncode for PortMappingRequest {
 impl AsyncMessageEncode for PortMappingResponse {
     async fn write_into<W>(self, buf: &mut W) -> Result<()>
     where
-        W: AsyncWriteExt + Unpin + Send,
+        W: AsyncWriteExt + ?Sized + Unpin + Send,
     {
         self.socket.write_into(buf).await?;
         self.found.write_into(buf).await
@@ -132,7 +132,7 @@ impl AsyncMessageEncode for PortMappingResponse {
 impl AsyncMessageEncode for PortMappingFound {
     async fn write_into<W>(self, buf: &mut W) -> Result<()>
     where
-        W: AsyncWriteExt + Unpin + Send,
+        W: AsyncWriteExt + ?Sized + Unpin + Send,
     {
         match self {
             Self::ToAgent(resp) => {
@@ -149,7 +149,7 @@ impl AsyncMessageEncode for PortMappingFound {
 impl AsyncMessageEncode for RegisterRequest {
     async fn write_into<W>(self, buf: &mut W) -> Result<()>
     where
-        W: AsyncWriteExt + Unpin + Send,
+        W: AsyncWriteExt + ?Sized + Unpin + Send,
     {
         buf.write_u64(self.account_id).await?;
         buf.write_u64(self.agent_id).await?;
@@ -165,7 +165,7 @@ impl AsyncMessageEncode for RegisterRequest {
 impl AsyncMessageEncode for RegisterResponse {
     async fn write_into<W>(self, buf: &mut W) -> Result<()>
     where
-        W: AsyncWriteExt + Unpin + Send,
+        W: AsyncWriteExt + ?Sized + Unpin + Send,
     {
         self.session.write_into(buf).await?;
         buf.write_u64(self.expires_at).await
@@ -177,7 +177,7 @@ impl AsyncMessageEncode for RegisterResponse {
 impl AsyncMessageEncode for UdpChannelDetails {
     async fn write_into<W>(self, buf: &mut W) -> Result<()>
     where
-        W: AsyncWriteExt + Unpin + Send,
+        W: AsyncWriteExt + ?Sized + Unpin + Send,
     {
         self.tunnel_addr.write_into(buf).await?;
         self.token.write_into(buf).await

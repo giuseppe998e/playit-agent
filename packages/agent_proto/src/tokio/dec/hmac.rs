@@ -8,7 +8,7 @@ use crate::hmac::HmacSign;
 impl super::AsyncMessageDecode for HmacSign<Sha256> {
     async fn read_from<R>(input: &mut R) -> ::std::io::Result<Self>
     where
-        R: ::tokio::io::AsyncReadExt + Unpin + Send,
+        R: ::tokio::io::AsyncReadExt + ?Sized + Unpin + Send,
     {
         let mut buf = [0u8; Self::BYTES];
         input.read_exact(&mut buf).await?;

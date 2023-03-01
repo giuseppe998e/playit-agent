@@ -21,7 +21,7 @@ use super::MessageDecode;
 
 // mod.rs
 impl MessageDecode for ControlRequest {
-    fn read_from<R: Read>(input: &mut R) -> Result<Self> {
+    fn read_from<R: Read + ?Sized>(input: &mut R) -> Result<Self> {
         match input.read_u32::<BigEndian>()? as u8 {
             Self::PING_IDX => Ping::read_from(input).map(Self::Ping),
 
@@ -40,7 +40,7 @@ impl MessageDecode for ControlRequest {
 }
 
 impl MessageDecode for ControlResponse {
-    fn read_from<R: Read>(input: &mut R) -> Result<Self> {
+    fn read_from<R: Read + ?Sized>(input: &mut R) -> Result<Self> {
         match input.read_u32::<BigEndian>()? as u8 {
             Self::PONG_IDX => Pong::read_from(input).map(Self::Pong),
 
@@ -63,7 +63,7 @@ impl MessageDecode for ControlResponse {
 
 // ping.rs
 impl MessageDecode for Ping {
-    fn read_from<R: Read>(input: &mut R) -> Result<Self> {
+    fn read_from<R: Read + ?Sized>(input: &mut R) -> Result<Self> {
         let now = input.read_u64::<BigEndian>()?;
         let session = Option::<AgentSession>::read_from(input)?;
 
@@ -72,7 +72,7 @@ impl MessageDecode for Ping {
 }
 
 impl MessageDecode for Pong {
-    fn read_from<R: Read>(input: &mut R) -> Result<Self> {
+    fn read_from<R: Read + ?Sized>(input: &mut R) -> Result<Self> {
         let request_now = input.read_u64::<BigEndian>()?;
         let server_now = input.read_u64::<BigEndian>()?;
         let server_id = input.read_u64::<BigEndian>()?;
@@ -95,7 +95,7 @@ impl MessageDecode for Pong {
 
 // port_map.rs
 impl MessageDecode for PortMappingRequest {
-    fn read_from<R: Read>(input: &mut R) -> Result<Self> {
+    fn read_from<R: Read + ?Sized>(input: &mut R) -> Result<Self> {
         let session = AgentSession::read_from(input)?;
         let socket = Socket::read_from(input)?;
 
@@ -104,7 +104,7 @@ impl MessageDecode for PortMappingRequest {
 }
 
 impl MessageDecode for PortMappingResponse {
-    fn read_from<R: Read>(input: &mut R) -> Result<Self> {
+    fn read_from<R: Read + ?Sized>(input: &mut R) -> Result<Self> {
         let socket = Socket::read_from(input)?;
         let found = Option::<PortMappingFound>::read_from(input)?;
 
@@ -113,7 +113,7 @@ impl MessageDecode for PortMappingResponse {
 }
 
 impl MessageDecode for PortMappingFound {
-    fn read_from<R: Read>(input: &mut R) -> Result<Self> {
+    fn read_from<R: Read + ?Sized>(input: &mut R) -> Result<Self> {
         match input.read_u32::<BigEndian>()? as u8 {
             Self::TO_AGENT_IDX => AgentSession::read_from(input).map(Self::ToAgent),
             Self::NONE_IDX => Ok(Self::None),
@@ -128,7 +128,7 @@ impl MessageDecode for PortMappingFound {
 
 // register.rs
 impl MessageDecode for RegisterRequest {
-    fn read_from<R: Read>(input: &mut R) -> Result<Self> {
+    fn read_from<R: Read + ?Sized>(input: &mut R) -> Result<Self> {
         let account_id = input.read_u64::<BigEndian>()?;
         let agent_id = input.read_u64::<BigEndian>()?;
         let agent_version = input.read_u64::<BigEndian>()?;
@@ -150,7 +150,7 @@ impl MessageDecode for RegisterRequest {
 }
 
 impl MessageDecode for RegisterResponse {
-    fn read_from<R: Read>(input: &mut R) -> Result<Self> {
+    fn read_from<R: Read + ?Sized>(input: &mut R) -> Result<Self> {
         let session = AgentSession::read_from(input)?;
         let expires_at = input.read_u64::<BigEndian>()?;
 
@@ -163,7 +163,7 @@ impl MessageDecode for RegisterResponse {
 
 // udp_chnl.rs
 impl MessageDecode for UdpChannelDetails {
-    fn read_from<R: Read>(input: &mut R) -> Result<Self> {
+    fn read_from<R: Read + ?Sized>(input: &mut R) -> Result<Self> {
         let tunnel_addr = SocketAddr::read_from(input)?;
         let token = Vec::<u8>::read_from(input)?;
 

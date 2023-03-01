@@ -13,7 +13,7 @@ use super::AsyncMessageEncode;
 impl AsyncMessageEncode for Socket {
     async fn write_into<W>(self, buf: &mut W) -> Result<()>
     where
-        W: AsyncWriteExt + Unpin + Send,
+        W: AsyncWriteExt + ?Sized + Unpin + Send,
     {
         self.ip.write_into(buf).await?;
         self.port.write_into(buf).await?;
@@ -25,7 +25,7 @@ impl AsyncMessageEncode for Socket {
 impl AsyncMessageEncode for Port {
     async fn write_into<W>(self, buf: &mut W) -> Result<()>
     where
-        W: AsyncWriteExt + Unpin + Send,
+        W: AsyncWriteExt + ?Sized + Unpin + Send,
     {
         let (start, end) = match self {
             Self::Single(port) => (port, port),
@@ -41,7 +41,7 @@ impl AsyncMessageEncode for Port {
 impl AsyncMessageEncode for Protocol {
     async fn write_into<W>(self, buf: &mut W) -> Result<()>
     where
-        W: AsyncWriteExt + Unpin + Send,
+        W: AsyncWriteExt + ?Sized + Unpin + Send,
     {
         buf.write_u8(self.into()).await
     }
@@ -52,7 +52,7 @@ impl AsyncMessageEncode for Protocol {
 impl AsyncMessageEncode for SocketFlow {
     async fn write_into<W>(self, buf: &mut W) -> Result<()>
     where
-        W: AsyncWriteExt + Unpin + Send,
+        W: AsyncWriteExt + ?Sized + Unpin + Send,
     {
         match self {
             SocketFlow::V4(flow) => {
@@ -71,7 +71,7 @@ impl AsyncMessageEncode for SocketFlow {
 impl AsyncMessageEncode for SocketFlowV4 {
     async fn write_into<W>(self, buf: &mut W) -> Result<()>
     where
-        W: AsyncWriteExt + Unpin + Send,
+        W: AsyncWriteExt + ?Sized + Unpin + Send,
     {
         let src = self.src();
         let dest = self.dest();
@@ -87,7 +87,7 @@ impl AsyncMessageEncode for SocketFlowV4 {
 impl AsyncMessageEncode for SocketFlowV6 {
     async fn write_into<W>(self, buf: &mut W) -> Result<()>
     where
-        W: AsyncWriteExt + Unpin + Send,
+        W: AsyncWriteExt + ?Sized + Unpin + Send,
     {
         let src = self.src();
         let dest = self.dest();

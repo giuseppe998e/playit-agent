@@ -9,7 +9,7 @@ use crate::socket::{
 use super::MessageEncode;
 
 impl MessageEncode for Socket {
-    fn write_into<W: Write>(self, buf: &mut W) -> Result<()> {
+    fn write_into<W: Write + ?Sized>(self, buf: &mut W) -> Result<()> {
         self.ip.write_into(buf)?;
         self.port.write_into(buf)?;
         self.proto.write_into(buf)
@@ -17,7 +17,7 @@ impl MessageEncode for Socket {
 }
 
 impl MessageEncode for Port {
-    fn write_into<W: Write>(self, buf: &mut W) -> Result<()> {
+    fn write_into<W: Write + ?Sized>(self, buf: &mut W) -> Result<()> {
         let (start, end) = match self {
             Self::Single(port) => (port, port),
             Self::Range(range) => (*range.start(), *range.end()),
@@ -29,14 +29,14 @@ impl MessageEncode for Port {
 }
 
 impl MessageEncode for Protocol {
-    fn write_into<W: Write>(self, buf: &mut W) -> Result<()> {
+    fn write_into<W: Write + ?Sized>(self, buf: &mut W) -> Result<()> {
         buf.write_u8(self.into())
     }
 }
 
 // SocketFlow
 impl MessageEncode for SocketFlow {
-    fn write_into<W: Write>(self, buf: &mut W) -> Result<()> {
+    fn write_into<W: Write + ?Sized>(self, buf: &mut W) -> Result<()> {
         match self {
             SocketFlow::V4(flow) => {
                 flow.write_into(buf)?;
@@ -51,7 +51,7 @@ impl MessageEncode for SocketFlow {
 }
 
 impl MessageEncode for SocketFlowV4 {
-    fn write_into<W: Write>(self, buf: &mut W) -> Result<()> {
+    fn write_into<W: Write + ?Sized>(self, buf: &mut W) -> Result<()> {
         let src = self.src();
         let dest = self.dest();
 
@@ -63,7 +63,7 @@ impl MessageEncode for SocketFlowV4 {
 }
 
 impl MessageEncode for SocketFlowV6 {
-    fn write_into<W: Write>(self, buf: &mut W) -> Result<()> {
+    fn write_into<W: Write + ?Sized>(self, buf: &mut W) -> Result<()> {
         let src = self.src();
         let dest = self.dest();
         let flowinfo = self.flowinfo();

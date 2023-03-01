@@ -17,7 +17,7 @@ use super::AsyncMessageDecode;
 impl AsyncMessageDecode for Socket {
     async fn read_from<R>(input: &mut R) -> Result<Self>
     where
-        R: AsyncReadExt + Unpin + Send,
+        R: AsyncReadExt + ?Sized + Unpin + Send,
     {
         let ip = IpAddr::read_from(input).await?;
         let port = Port::read_from(input).await?;
@@ -31,7 +31,7 @@ impl AsyncMessageDecode for Socket {
 impl AsyncMessageDecode for Port {
     async fn read_from<R>(input: &mut R) -> Result<Self>
     where
-        R: AsyncReadExt + Unpin + Send,
+        R: AsyncReadExt + ?Sized + Unpin + Send,
     {
         let start = input.read_u16().await?;
         let end = input.read_u16().await?;
@@ -47,7 +47,7 @@ impl AsyncMessageDecode for Port {
 impl AsyncMessageDecode for Protocol {
     async fn read_from<R>(input: &mut R) -> Result<Self>
     where
-        R: AsyncReadExt + Unpin + Send,
+        R: AsyncReadExt + ?Sized + Unpin + Send,
     {
         match input.read_u8().await? {
             1 => Ok(Self::Tcp),
@@ -74,7 +74,7 @@ impl AsyncMessageDecode for SocketFlow {
     /// to obtain the `SocketFlowV6` structure.
     async fn read_from<R>(input: &mut R) -> Result<Self>
     where
-        R: AsyncReadExt + Unpin + Send,
+        R: AsyncReadExt + ?Sized + Unpin + Send,
     {
         let mut v4_buf = [0u8; SocketFlowV4::size() + FLOW_ID_SIZE];
         input.read_exact(&mut v4_buf).await?;
@@ -119,7 +119,7 @@ impl AsyncMessageDecode for SocketFlow {
 impl AsyncMessageDecode for SocketFlowV4 {
     async fn read_from<R>(input: &mut R) -> Result<Self>
     where
-        R: AsyncReadExt + Unpin + Send,
+        R: AsyncReadExt + ?Sized + Unpin + Send,
     {
         let src_ip = input.read_u32().await?;
         let dest_ip = input.read_u32().await?;
@@ -137,7 +137,7 @@ impl AsyncMessageDecode for SocketFlowV4 {
 impl AsyncMessageDecode for SocketFlowV6 {
     async fn read_from<R>(input: &mut R) -> Result<Self>
     where
-        R: AsyncReadExt + Unpin + Send,
+        R: AsyncReadExt + ?Sized + Unpin + Send,
     {
         let src_ip = input.read_u128().await?;
         let dest_ip = input.read_u128().await?;

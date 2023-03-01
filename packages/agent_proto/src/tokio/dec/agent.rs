@@ -4,7 +4,7 @@ use crate::agent::AgentSession;
 impl super::AsyncMessageDecode for AgentSession {
     async fn read_from<R>(input: &mut R) -> ::std::io::Result<Self>
     where
-        R: ::tokio::io::AsyncReadExt + Unpin + Send,
+        R: ::tokio::io::AsyncReadExt + ?Sized + Unpin + Send,
     {
         let id = input.read_u64().await?;
         let account_id = input.read_u64().await?;

@@ -13,7 +13,7 @@ use crate::socket::{
 use super::MessageDecode;
 
 impl MessageDecode for Socket {
-    fn read_from<R: Read>(input: &mut R) -> Result<Self> {
+    fn read_from<R: Read + ?Sized>(input: &mut R) -> Result<Self> {
         let ip = IpAddr::read_from(input)?;
         let port = Port::read_from(input)?;
         let proto = Protocol::read_from(input)?;
@@ -23,7 +23,7 @@ impl MessageDecode for Socket {
 }
 
 impl MessageDecode for Port {
-    fn read_from<R: Read>(input: &mut R) -> Result<Self> {
+    fn read_from<R: Read + ?Sized>(input: &mut R) -> Result<Self> {
         let start = input.read_u16::<BigEndian>()?;
         let end = input.read_u16::<BigEndian>()?;
 
@@ -35,7 +35,7 @@ impl MessageDecode for Port {
 }
 
 impl MessageDecode for Protocol {
-    fn read_from<R: Read>(input: &mut R) -> Result<Self> {
+    fn read_from<R: Read + ?Sized>(input: &mut R) -> Result<Self> {
         match input.read_u8()? {
             1 => Ok(Self::Tcp),
             2 => Ok(Self::Udp),
@@ -58,7 +58,7 @@ impl MessageDecode for SocketFlow {
     /// `footer_id`. If the `footer_id` matches one of the expected values, we return the
     /// `SocketFlowV4` structure. Otherwise, we continue reading the remaining bytes
     /// to obtain the `SocketFlowV6` structure.
-    fn read_from<R: Read>(input: &mut R) -> Result<Self> {
+    fn read_from<R: Read + ?Sized>(input: &mut R) -> Result<Self> {
         let mut v4_buf = [0u8; SocketFlowV4::size() + FLOW_ID_SIZE];
         input.read_exact(&mut v4_buf)?;
 
@@ -95,7 +95,7 @@ impl MessageDecode for SocketFlow {
 }
 
 impl MessageDecode for SocketFlowV4 {
-    fn read_from<R: Read>(input: &mut R) -> Result<Self> {
+    fn read_from<R: Read + ?Sized>(input: &mut R) -> Result<Self> {
         let src_ip = input.read_u32::<BigEndian>()?;
         let dest_ip = input.read_u32::<BigEndian>()?;
         let src_port = input.read_u16::<BigEndian>()?;
@@ -109,7 +109,7 @@ impl MessageDecode for SocketFlowV4 {
 }
 
 impl MessageDecode for SocketFlowV6 {
-    fn read_from<R: Read>(input: &mut R) -> Result<Self> {
+    fn read_from<R: Read + ?Sized>(input: &mut R) -> Result<Self> {
         let src_ip = input.read_u128::<BigEndian>()?;
         let dest_ip = input.read_u128::<BigEndian>()?;
         let src_port = input.read_u16::<BigEndian>()?;

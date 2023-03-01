@@ -4,7 +4,7 @@ mod hmac;
 mod socket;
 
 use std::{
-    io::Result,
+    io::{self, Result},
     net::{IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr},
 };
 
@@ -13,9 +13,9 @@ use tokio::io::AsyncWriteExt;
 
 #[async_trait::async_trait]
 pub trait AsyncMessageEncode: Sized {
-    async fn write_into<W>(self, buf: &mut W) -> ::std::io::Result<()>
+    async fn write_into<W>(self, buf: &mut W) -> io::Result<()>
     where
-        W: ::tokio::io::AsyncWriteExt + Unpin + Send;
+        W: AsyncWriteExt + ?Sized + Unpin + Send;
 }
 
 #[async_trait]
@@ -23,7 +23,7 @@ impl AsyncMessageEncode for u64 {
     #[inline]
     async fn write_into<W>(self, buf: &mut W) -> Result<()>
     where
-        W: AsyncWriteExt + Unpin + Send,
+        W: AsyncWriteExt + ?Sized + Unpin + Send,
     {
         buf.write_u64(self).await
     }
@@ -33,7 +33,7 @@ impl AsyncMessageEncode for u64 {
 impl<T: AsyncMessageEncode + Send> AsyncMessageEncode for Option<T> {
     async fn write_into<W>(self, buf: &mut W) -> Result<()>
     where
-        W: AsyncWriteExt + Unpin + Send,
+        W: AsyncWriteExt + ?Sized + Unpin + Send,
     {
         match self {
             Some(v) => {
@@ -49,7 +49,7 @@ impl<T: AsyncMessageEncode + Send> AsyncMessageEncode for Option<T> {
 impl AsyncMessageEncode for Vec<u8> {
     async fn write_into<W>(self, buf: &mut W) -> Result<()>
     where
-        W: AsyncWriteExt + Unpin + Send,
+        W: AsyncWriteExt + ?Sized + Unpin + Send,
     {
         buf.write_u64(self.len() as _).await?;
         buf.write_all(&self).await
@@ -60,7 +60,7 @@ impl AsyncMessageEncode for Vec<u8> {
 impl<T: AsyncMessageEncode + Send + Sync> AsyncMessageEncode for Vec<T> {
     async fn write_into<W>(self, buf: &mut W) -> Result<()>
     where
-        W: AsyncWriteExt + Unpin + Send,
+        W: AsyncWriteExt + ?Sized + Unpin + Send,
     {
         buf.write_u64(self.len() as _).await?;
 
@@ -77,7 +77,7 @@ impl<T: AsyncMessageEncode + Send + Sync> AsyncMessageEncode for Vec<T> {
 impl AsyncMessageEncode for SocketAddr {
     async fn write_into<W>(self, buf: &mut W) -> Result<()>
     where
-        W: AsyncWriteExt + Unpin + Send,
+        W: AsyncWriteExt + ?Sized + Unpin + Send,
     {
         match self {
             SocketAddr::V4(addr) => {
@@ -98,7 +98,7 @@ impl AsyncMessageEncode for SocketAddr {
 impl AsyncMessageEncode for IpAddr {
     async fn write_into<W>(self, buf: &mut W) -> Result<()>
     where
-        W: AsyncWriteExt + Unpin + Send,
+        W: AsyncWriteExt + ?Sized + Unpin + Send,
     {
         match self {
             IpAddr::V4(ip) => {
@@ -118,7 +118,7 @@ impl AsyncMessageEncode for Ipv4Addr {
     #[inline]
     async fn write_into<W>(self, buf: &mut W) -> Result<()>
     where
-        W: AsyncWriteExt + Unpin + Send,
+        W: AsyncWriteExt + ?Sized + Unpin + Send,
     {
         buf.write_all(&self.octets()).await
     }
@@ -129,7 +129,7 @@ impl AsyncMessageEncode for Ipv6Addr {
     #[inline]
     async fn write_into<W>(self, buf: &mut W) -> Result<()>
     where
-        W: AsyncWriteExt + Unpin + Send,
+        W: AsyncWriteExt + ?Sized + Unpin + Send,
     {
         buf.write_all(&self.octets()).await
     }
