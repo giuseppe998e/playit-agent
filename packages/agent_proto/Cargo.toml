@@ -11,10 +11,10 @@ tokio = ["dep:async-trait", "dep:tokio"]
 
 [dependencies]
 async-trait = { workspace = true, optional = true }
-byteorder = { workspace = true, default-features = false, optional = true }
-hmac = { workspace = true, default-features = false }
-serde = { workspace = true, default-features = false, features = ["derive"] }
-sha2 = { workspace = true, default-features = false }
+byteorder = { workspace = true, optional = true }
+hmac = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+sha2 = { workspace = true }
 tokio = { workspace = true, features = ["io-util"], optional = true }
 
 [dev-dependencies]

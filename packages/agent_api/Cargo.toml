@@ -6,7 +6,7 @@ edition = { workspace = true }
 
 [dependencies]
 # Internal deps
-playit-agent-proto = { path = "../agent_proto", default-features = false }
+playit-agent-proto = { path = "../agent_proto" }
 # External deps
 reqwest = { workspace = true, features = ["json"] }
 serde = { workspace = true, default-features = false, features = ["derive"] }
