@@ -7,8 +7,8 @@ use async_trait::async_trait;
 use tokio::io::AsyncReadExt;
 
 use crate::socket::{
-    Port, Protocol, Socket, SocketFlow, SocketFlowV4, SocketFlowV6, FLOW_FOOTER_BYTES,
-    FLOW_V4_BYTES, FLOW_V4_FOOTER_ID, FLOW_V4_FOOTER_ID_OLD, FLOW_V6_BYTES, FLOW_V6_FOOTER_ID,
+    Port, Protocol, Socket, SocketFlow, SocketFlowV4, SocketFlowV6, FLOW_ID_BYTES,
+    FLOW_V4_BYTES, FLOW_V4_ID, FLOW_V4_ID_OLD, FLOW_V6_BYTES, FLOW_V6_ID,
 };
 
 use super::AsyncMessageDecode;
@@ -76,17 +76,17 @@ impl AsyncMessageDecode for SocketFlow {
     where
         R: AsyncReadExt + Unpin + Send,
     {
-        let mut v4_buf = [0u8; FLOW_V4_BYTES + FLOW_FOOTER_BYTES];
+        let mut v4_buf = [0u8; FLOW_V4_BYTES + FLOW_ID_BYTES];
         input.read_exact(&mut v4_buf).await?;
 
         let footer_id = {
-            let mut u64_buf = [0u8; FLOW_FOOTER_BYTES];
+            let mut u64_buf = [0u8; FLOW_ID_BYTES];
             let mut footer_id_buf = Cursor::new(&v4_buf[FLOW_V4_BYTES..]);
             footer_id_buf.read_exact(&mut u64_buf).await?;
             u64::from_be_bytes(u64_buf)
         };
 
-        if matches!(footer_id, FLOW_V4_FOOTER_ID | FLOW_V4_FOOTER_ID_OLD) {
+        if matches!(footer_id, FLOW_V4_ID | FLOW_V4_ID_OLD) {
             let mut v4_cursor = Cursor::new(&v4_buf);
             return SocketFlowV4::read_from(&mut v4_cursor).await.map(Self::V4);
         }
@@ -96,14 +96,14 @@ impl AsyncMessageDecode for SocketFlow {
         input.read_exact(&mut v6_buf).await?;
 
         let footer_id = {
-            let mut u64_buf = [0u8; FLOW_FOOTER_BYTES];
+            let mut u64_buf = [0u8; FLOW_ID_BYTES];
             let mut footer_id_buf =
-                Cursor::new(&v6_buf[FLOW_V6_BYTES - FLOW_V4_BYTES - FLOW_FOOTER_BYTES..]);
+                Cursor::new(&v6_buf[FLOW_V6_BYTES - FLOW_V4_BYTES - FLOW_ID_BYTES..]);
             footer_id_buf.read_exact(&mut u64_buf).await?;
             u64::from_be_bytes(u64_buf)
         };
 
-        if matches!(footer_id, FLOW_V6_FOOTER_ID) {
+        if matches!(footer_id, FLOW_V6_ID) {
             let mut v6_cursor = Cursor::new(&v4_buf).chain(Cursor::new(&v6_buf));
             return SocketFlowV6::read_from(&mut v6_cursor).await.map(Self::V6);
         }

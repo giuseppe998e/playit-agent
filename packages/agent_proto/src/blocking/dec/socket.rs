@@ -6,8 +6,8 @@ use std::{
 use byteorder::{BigEndian, ReadBytesExt};
 
 use crate::socket::{
-    Port, Protocol, Socket, SocketFlow, SocketFlowV4, SocketFlowV6, FLOW_FOOTER_BYTES,
-    FLOW_V4_BYTES, FLOW_V4_FOOTER_ID, FLOW_V4_FOOTER_ID_OLD, FLOW_V6_BYTES, FLOW_V6_FOOTER_ID,
+    Port, Protocol, Socket, SocketFlow, SocketFlowV4, SocketFlowV6, FLOW_ID_BYTES,
+    FLOW_V4_BYTES, FLOW_V4_ID, FLOW_V4_ID_OLD, FLOW_V6_BYTES, FLOW_V6_ID,
 };
 
 use super::MessageDecode;
@@ -59,7 +59,7 @@ impl MessageDecode for SocketFlow {
     /// `SocketFlowV4` structure. Otherwise, we continue reading the remaining bytes
     /// to obtain the `SocketFlowV6` structure.
     fn read_from<R: Read>(input: &mut R) -> Result<Self> {
-        let mut v4_buf = [0u8; FLOW_V4_BYTES + FLOW_FOOTER_BYTES];
+        let mut v4_buf = [0u8; FLOW_V4_BYTES + FLOW_ID_BYTES];
         input.read_exact(&mut v4_buf)?;
 
         let footer_id = {
@@ -67,7 +67,7 @@ impl MessageDecode for SocketFlow {
             footer_id_buf.read_u64::<BigEndian>()?
         };
 
-        if matches!(footer_id, FLOW_V4_FOOTER_ID | FLOW_V4_FOOTER_ID_OLD) {
+        if matches!(footer_id, FLOW_V4_ID | FLOW_V4_ID_OLD) {
             let mut v4_cursor = Cursor::new(&v4_buf);
             return SocketFlowV4::read_from(&mut v4_cursor).map(Self::V4);
         }
@@ -78,11 +78,11 @@ impl MessageDecode for SocketFlow {
 
         let footer_id = {
             let mut footer_id_buf =
-                Cursor::new(&v6_buf[FLOW_V6_BYTES - FLOW_V4_BYTES - FLOW_FOOTER_BYTES..]);
+                Cursor::new(&v6_buf[FLOW_V6_BYTES - FLOW_V4_BYTES - FLOW_ID_BYTES..]);
             footer_id_buf.read_u64::<BigEndian>()?
         };
 
-        if matches!(footer_id, FLOW_V6_FOOTER_ID) {
+        if matches!(footer_id, FLOW_V6_ID) {
             let mut v6_cursor = Cursor::new(&v4_buf).chain(Cursor::new(&v6_buf));
             return SocketFlowV6::read_from(&mut v6_cursor).map(Self::V6);
         }
