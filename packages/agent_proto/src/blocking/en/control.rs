@@ -4,12 +4,19 @@ use byteorder::{BigEndian, WriteBytesExt};
 
 use crate::control::{
     ControlRequest, ControlResponse, Ping, Pong, PortMappingFound, PortMappingRequest,
-    PortMappingResponse, RegisterRequest, RegisterResponse, UdpChannelDetails,
+    PortMappingResponse, RegisterRequest, RegisterResponse, RemoteProcedureCall, UdpChannelDetails,
 };
 
 use super::MessageEncode;
 
 // mod.rs
+impl<T: MessageEncode> MessageEncode for RemoteProcedureCall<T> {
+    fn write_into<W: Write + ?Sized>(self, buf: &mut W) -> Result<()> {
+        buf.write_u64::<BigEndian>(self.request_id)?;
+        self.content.write_into(buf)
+    }
+}
+
 impl MessageEncode for ControlRequest {
     fn write_into<W: Write + ?Sized>(self, buf: &mut W) -> Result<()> {
         match self {

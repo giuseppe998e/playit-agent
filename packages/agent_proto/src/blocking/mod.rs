@@ -17,7 +17,7 @@ mod en_dec {
         control::{
             ControlRequest, ControlResponse, KeepAliveRequest, Ping, Pong, PortMappingFound,
             PortMappingRequest, PortMappingResponse, RegisterRequest, RegisterResponse,
-            UdpChannelDetails,
+            RemoteProcedureCall, UdpChannelDetails,
         },
         hmac::{signer::HmacSigner, HmacSign},
         socket::{Port, Protocol, Socket, SocketFlow, SocketFlowV4, SocketFlowV6},
@@ -38,6 +38,23 @@ mod en_dec {
         // Decode
         let mut buf_cursor = Cursor::new(buf);
         let dec_result = AgentSession::read_from(&mut buf_cursor);
+        assert_eq!(data, dec_result.unwrap())
+    }
+
+    #[test]
+    fn test_remoteprocedurecall() {
+        let mut buf = Vec::<u8>::with_capacity(size_of::<RemoteProcedureCall<u64>>());
+        let data = RemoteProcedureCall::<u64> {
+            request_id: random(),
+            content: random(),
+        };
+
+        // Encode
+        assert!(matches!(data.clone().write_into(&mut buf), Ok(_)));
+
+        // Decode
+        let mut buf_cursor = Cursor::new(buf);
+        let dec_result = RemoteProcedureCall::<u64>::read_from(&mut buf_cursor);
         assert_eq!(data, dec_result.unwrap())
     }
 

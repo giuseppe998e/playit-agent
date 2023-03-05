@@ -12,7 +12,7 @@ use crate::{
     control::{
         ControlRequest, ControlResponse, KeepAliveRequest, Ping, Pong, PortMappingFound,
         PortMappingRequest, PortMappingResponse, RegisterRequest, RegisterResponse,
-        UdpChannelDetails, UdpChannelRequest,
+        RemoteProcedureCall, UdpChannelDetails, UdpChannelRequest,
     },
     hmac::HmacSign,
     socket::Socket,
@@ -21,6 +21,22 @@ use crate::{
 use super::AsyncMessageDecode;
 
 // mod.rs
+#[async_trait]
+impl<T: AsyncMessageDecode> AsyncMessageDecode for RemoteProcedureCall<T> {
+    async fn read_from<R>(input: &mut R) -> Result<Self>
+    where
+        R: AsyncReadExt + ?Sized + Unpin + Send,
+    {
+        let request_id = input.read_u64().await?;
+        let content = T::read_from(input).await?;
+
+        Ok(Self {
+            request_id,
+            content,
+        })
+    }
+}
+
 #[async_trait]
 impl AsyncMessageDecode for ControlRequest {
     async fn read_from<R>(input: &mut R) -> Result<Self>

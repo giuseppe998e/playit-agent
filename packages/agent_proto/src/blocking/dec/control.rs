@@ -11,7 +11,7 @@ use crate::{
     control::{
         ControlRequest, ControlResponse, KeepAliveRequest, Ping, Pong, PortMappingFound,
         PortMappingRequest, PortMappingResponse, RegisterRequest, RegisterResponse,
-        UdpChannelDetails, UdpChannelRequest,
+        RemoteProcedureCall, UdpChannelDetails, UdpChannelRequest,
     },
     hmac::HmacSign,
     socket::Socket,
@@ -20,6 +20,18 @@ use crate::{
 use super::MessageDecode;
 
 // mod.rs
+impl<T: MessageDecode> MessageDecode for RemoteProcedureCall<T> {
+    fn read_from<R: Read + ?Sized>(input: &mut R) -> Result<Self> {
+        let request_id = input.read_u64::<BigEndian>()?;
+        let content = T::read_from(input)?;
+
+        Ok(Self {
+            request_id,
+            content,
+        })
+    }
+}
+
 impl MessageDecode for ControlRequest {
     fn read_from<R: Read + ?Sized>(input: &mut R) -> Result<Self> {
         match input.read_u32::<BigEndian>()? as u8 {

@@ -3,14 +3,20 @@ mod port_map;
 mod register;
 mod udp_chnl;
 
+use crate::agent::AgentSession;
+
 pub use ping::{Ping, Pong};
 pub use port_map::{PortMappingFound, PortMappingRequest, PortMappingResponse};
 pub use register::{RegisterRequest, RegisterResponse};
 pub use udp_chnl::{UdpChannelDetails, UdpChannelRequest};
 
-use crate::agent::AgentSession;
-
 pub type KeepAliveRequest = AgentSession;
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct RemoteProcedureCall<T> {
+    pub request_id: u64,
+    pub content: T,
+}
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum ControlRequest {
