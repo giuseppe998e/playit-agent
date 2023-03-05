@@ -12,6 +12,11 @@ use byteorder::{BigEndian, ReadBytesExt};
 
 pub trait MessageDecode: Sized {
     fn read_from<R: Read + ?Sized>(input: &mut R) -> io::Result<Self>;
+
+    fn read_from_slice<S: AsRef<[u8]>>(input: S) -> io::Result<Self> {
+        let mut reader = io::Cursor::new(input);
+        Self::read_from(&mut reader)
+    }
 }
 
 impl MessageDecode for u64 {

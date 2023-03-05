@@ -5,6 +5,7 @@ mod socket;
 
 use std::{
     io::{self, Result, Write},
+    mem,
     net::{IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr},
 };
 
@@ -12,6 +13,12 @@ use byteorder::{BigEndian, WriteBytesExt};
 
 pub trait MessageEncode: Sized {
     fn write_into<W: Write + ?Sized>(self, buf: &mut W) -> io::Result<()>;
+
+    fn write_to_vec(self) -> io::Result<Vec<u8>> {
+        let mut vec = Vec::with_capacity(mem::size_of::<Self>());
+        Self::write_into(self, &mut vec)?;
+        Ok(vec)
+    }
 }
 
 impl MessageEncode for u64 {
