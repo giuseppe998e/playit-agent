@@ -5,13 +5,14 @@ authors = { workspace = true }
 edition = { workspace = true }
 
 [features]
-full = ["blocking", "tokio"]
 blocking = ["dep:byteorder"]
+bytes = ["blocking", "dep:bytes"]
 tokio = ["dep:async-trait", "dep:tokio"]
 
 [dependencies]
 async-trait = { workspace = true, optional = true }
 byteorder = { workspace = true, optional = true }
+bytes = { workspace = true, optional = true }
 hmac = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
 sha2 = { workspace = true }

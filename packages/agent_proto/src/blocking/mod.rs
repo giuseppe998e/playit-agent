@@ -33,7 +33,7 @@ mod en_dec {
         };
 
         // Encode
-        assert!(matches!(data.clone().write_into(&mut buf), Ok(_)));
+        assert!(matches!(data.clone().write_to(&mut buf), Ok(_)));
 
         // Decode
         let mut buf_cursor = Cursor::new(buf);
@@ -50,7 +50,7 @@ mod en_dec {
         };
 
         // Encode
-        assert!(matches!(data.clone().write_into(&mut buf), Ok(_)));
+        assert!(matches!(data.clone().write_to(&mut buf), Ok(_)));
 
         // Decode
         let mut buf_cursor = Cursor::new(buf);
@@ -68,7 +68,7 @@ mod en_dec {
         });
 
         // Encode
-        assert!(matches!(data.clone().write_into(&mut buf), Ok(_)));
+        assert!(matches!(data.clone().write_to(&mut buf), Ok(_)));
 
         // Decode
         let mut buf_cursor = Cursor::new(buf);
@@ -82,7 +82,7 @@ mod en_dec {
         let data = ControlResponse::RequestQueued;
 
         // Encode
-        assert!(matches!(data.clone().write_into(&mut buf), Ok(_)));
+        assert!(matches!(data.clone().write_to(&mut buf), Ok(_)));
 
         // Decode
         let mut buf_cursor = Cursor::new(buf);
@@ -99,7 +99,7 @@ mod en_dec {
         };
 
         // Encode
-        assert!(matches!(data.clone().write_into(&mut buf), Ok(_)));
+        assert!(matches!(data.clone().write_to(&mut buf), Ok(_)));
 
         // Decode
         let mut buf_cursor = Cursor::new(buf);
@@ -121,7 +121,7 @@ mod en_dec {
         };
 
         // Encode
-        assert!(matches!(data.clone().write_into(&mut buf), Ok(_)));
+        assert!(matches!(data.clone().write_to(&mut buf), Ok(_)));
 
         // Decode
         let mut buf_cursor = Cursor::new(buf);
@@ -146,7 +146,7 @@ mod en_dec {
         };
 
         // Encode
-        assert!(matches!(data.clone().write_into(&mut buf), Ok(_)));
+        assert!(matches!(data.clone().write_to(&mut buf), Ok(_)));
 
         // Decode
         let mut buf_cursor = Cursor::new(buf);
@@ -169,7 +169,7 @@ mod en_dec {
         };
 
         // Encode
-        assert!(matches!(data.clone().write_into(&mut buf), Ok(_)));
+        assert!(matches!(data.clone().write_to(&mut buf), Ok(_)));
 
         // Decode
         let mut buf_cursor = Cursor::new(buf);
@@ -187,7 +187,7 @@ mod en_dec {
         });
 
         // Encode
-        assert!(matches!(data.clone().write_into(&mut buf), Ok(_)));
+        assert!(matches!(data.clone().write_to(&mut buf), Ok(_)));
 
         // Decode
         let mut buf_cursor = Cursor::new(buf);
@@ -209,7 +209,7 @@ mod en_dec {
         };
 
         // Encode
-        assert!(matches!(data.clone().write_into(&mut buf), Ok(_)));
+        assert!(matches!(data.clone().write_to(&mut buf), Ok(_)));
 
         // Decode
         let mut buf_cursor = Cursor::new(buf);
@@ -230,7 +230,7 @@ mod en_dec {
         };
 
         // Encode
-        assert!(matches!(data.clone().write_into(&mut buf), Ok(_)));
+        assert!(matches!(data.clone().write_to(&mut buf), Ok(_)));
 
         // Decode
         let mut buf_cursor = Cursor::new(buf);
@@ -247,7 +247,7 @@ mod en_dec {
         };
 
         // Encode
-        assert!(matches!(data.clone().write_into(&mut buf), Ok(_)));
+        assert!(matches!(data.clone().write_to(&mut buf), Ok(_)));
 
         // Decode
         let mut buf_cursor = Cursor::new(buf);
@@ -269,7 +269,7 @@ mod en_dec {
         let data = hmac.sign_data(&random::<[u8; 16]>());
 
         // Encode
-        assert!(matches!(data.clone().write_into(&mut buf), Ok(_)));
+        assert!(matches!(data.clone().write_to(&mut buf), Ok(_)));
 
         // Decode
         let mut buf_cursor = Cursor::new(buf);
@@ -287,7 +287,7 @@ mod en_dec {
         };
 
         // Encode
-        assert!(matches!(data.clone().write_into(&mut buf), Ok(_)));
+        assert!(matches!(data.clone().write_to(&mut buf), Ok(_)));
 
         // Decode
         let mut buf_cursor = Cursor::new(buf);
@@ -301,7 +301,7 @@ mod en_dec {
         let data = Port::Single(random());
 
         // Encode
-        assert!(matches!(data.clone().write_into(&mut buf), Ok(_)));
+        assert!(matches!(data.clone().write_to(&mut buf), Ok(_)));
 
         // Decode
         let mut buf_cursor = Cursor::new(buf);
@@ -315,7 +315,7 @@ mod en_dec {
         let data = Protocol::Both;
 
         // Encode
-        assert!(matches!(data.clone().write_into(&mut buf), Ok(_)));
+        assert!(matches!(data.clone().write_to(&mut buf), Ok(_)));
 
         // Decode
         let mut buf_cursor = Cursor::new(buf);
@@ -332,7 +332,7 @@ mod en_dec {
         ));
 
         // Encode
-        assert!(matches!(data.clone().write_into(&mut buf), Ok(_)));
+        assert!(matches!(data.clone().write_to(&mut buf), Ok(_)));
 
         // Decode
         let mut buf_cursor = Cursor::new(buf);
@@ -350,7 +350,7 @@ mod en_dec {
         ));
 
         // Encode
-        assert!(matches!(data.clone().write_into(&mut buf), Ok(_)));
+        assert!(matches!(data.clone().write_to(&mut buf), Ok(_)));
 
         // Decode
         let mut buf_cursor = Cursor::new(buf);

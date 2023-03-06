@@ -9,15 +9,15 @@ use crate::socket::{
 use super::MessageEncode;
 
 impl MessageEncode for Socket {
-    fn write_into<W: Write + ?Sized>(self, buf: &mut W) -> Result<()> {
-        self.ip.write_into(buf)?;
-        self.port.write_into(buf)?;
-        self.proto.write_into(buf)
+    fn write_to<W: Write + ?Sized>(self, buf: &mut W) -> Result<()> {
+        self.ip.write_to(buf)?;
+        self.port.write_to(buf)?;
+        self.proto.write_to(buf)
     }
 }
 
 impl MessageEncode for Port {
-    fn write_into<W: Write + ?Sized>(self, buf: &mut W) -> Result<()> {
+    fn write_to<W: Write + ?Sized>(self, buf: &mut W) -> Result<()> {
         let (start, end) = match self {
             Self::Single(port) => (port, port),
             Self::Range(range) => (*range.start(), *range.end()),
@@ -29,21 +29,21 @@ impl MessageEncode for Port {
 }
 
 impl MessageEncode for Protocol {
-    fn write_into<W: Write + ?Sized>(self, buf: &mut W) -> Result<()> {
+    fn write_to<W: Write + ?Sized>(self, buf: &mut W) -> Result<()> {
         buf.write_u8(self.into())
     }
 }
 
 // SocketFlow
 impl MessageEncode for SocketFlow {
-    fn write_into<W: Write + ?Sized>(self, buf: &mut W) -> Result<()> {
+    fn write_to<W: Write + ?Sized>(self, buf: &mut W) -> Result<()> {
         match self {
             SocketFlow::V4(flow) => {
-                flow.write_into(buf)?;
+                flow.write_to(buf)?;
                 buf.write_u64::<BigEndian>(FLOW_V4_ID_OLD)
             }
             SocketFlow::V6(flow) => {
-                flow.write_into(buf)?;
+                flow.write_to(buf)?;
                 buf.write_u64::<BigEndian>(FLOW_V6_ID)
             }
         }
@@ -51,7 +51,7 @@ impl MessageEncode for SocketFlow {
 }
 
 impl MessageEncode for SocketFlowV4 {
-    fn write_into<W: Write + ?Sized>(self, buf: &mut W) -> Result<()> {
+    fn write_to<W: Write + ?Sized>(self, buf: &mut W) -> Result<()> {
         let src = self.src();
         let dest = self.dest();
 
@@ -63,7 +63,7 @@ impl MessageEncode for SocketFlowV4 {
 }
 
 impl MessageEncode for SocketFlowV6 {
-    fn write_into<W: Write + ?Sized>(self, buf: &mut W) -> Result<()> {
+    fn write_to<W: Write + ?Sized>(self, buf: &mut W) -> Result<()> {
         let src = self.src();
         let dest = self.dest();
         let flowinfo = self.flowinfo();

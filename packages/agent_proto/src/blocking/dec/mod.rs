@@ -17,6 +17,12 @@ pub trait MessageDecode: Sized {
         let mut reader = io::Cursor::new(input);
         Self::read_from(&mut reader)
     }
+
+    #[cfg(feature = "bytes")]
+    fn read_from_buf<B: bytes::Buf>(input: B) -> io::Result<Self> {
+        let mut reader = bytes::Buf::reader(input);
+        Self::read_from(&mut reader)
+    }
 }
 
 impl MessageDecode for u64 {
