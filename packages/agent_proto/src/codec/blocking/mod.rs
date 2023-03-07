@@ -15,9 +15,9 @@ mod en_dec {
     use crate::{
         agent::AgentSession,
         control::{
-            ControlRequest, ControlResponse, KeepAliveRequest, Ping, Pong, PortMappingFound,
-            PortMappingRequest, PortMappingResponse, RegisterRequest, RegisterResponse,
-            RemoteProcedureCall, UdpChannelDetails,
+            KeepAliveRequest, Ping, Pong, PortMappingFound, PortMappingRequest,
+            PortMappingResponse, RegisterRequest, RegisterResponse, RemoteProcedureCall,
+            RpcRequest, RpcResponse, UdpChannelDetails,
         },
         hmac::{signer::HmacSigner, HmacSign},
         socket::{Port, Protocol, Socket, SocketFlow, SocketFlowV4, SocketFlowV6},
@@ -60,8 +60,8 @@ mod en_dec {
 
     #[test]
     fn test_controlrequest() {
-        let mut buf = Vec::<u8>::with_capacity(size_of::<ControlRequest>());
-        let data = ControlRequest::KeepAlive(KeepAliveRequest {
+        let mut buf = Vec::<u8>::with_capacity(size_of::<RpcRequest>());
+        let data = RpcRequest::KeepAlive(KeepAliveRequest {
             id: random(),
             account_id: random(),
             agent_id: random(),
@@ -72,21 +72,21 @@ mod en_dec {
 
         // Decode
         let mut buf_cursor = Cursor::new(buf);
-        let dec_result = ControlRequest::read_from(&mut buf_cursor);
+        let dec_result = RpcRequest::read_from(&mut buf_cursor);
         assert_eq!(data, dec_result.unwrap())
     }
 
     #[test]
     fn test_controlresponse() {
-        let mut buf = Vec::<u8>::with_capacity(size_of::<ControlResponse>());
-        let data = ControlResponse::RequestQueued;
+        let mut buf = Vec::<u8>::with_capacity(size_of::<RpcResponse>());
+        let data = RpcResponse::RequestQueued;
 
         // Encode
         assert!(matches!(data.clone().write_to(&mut buf), Ok(_)));
 
         // Decode
         let mut buf_cursor = Cursor::new(buf);
-        let dec_result = ControlResponse::read_from(&mut buf_cursor);
+        let dec_result = RpcResponse::read_from(&mut buf_cursor);
         assert_eq!(data, dec_result.unwrap())
     }
 

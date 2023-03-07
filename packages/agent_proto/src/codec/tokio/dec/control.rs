@@ -10,9 +10,9 @@ use sha2::Sha256;
 use crate::{
     agent::AgentSession,
     control::{
-        ControlRequest, ControlResponse, KeepAliveRequest, Ping, Pong, PortMappingFound,
-        PortMappingRequest, PortMappingResponse, RegisterRequest, RegisterResponse,
-        RemoteProcedureCall, UdpChannelDetails, UdpChannelRequest,
+        KeepAliveRequest, Ping, Pong, PortMappingFound, PortMappingRequest, PortMappingResponse,
+        RegisterRequest, RegisterResponse, RemoteProcedureCall, RpcRequest, RpcResponse,
+        UdpChannelDetails, UdpChannelRequest,
     },
     hmac::HmacSign,
     socket::Socket,
@@ -38,7 +38,7 @@ impl<T: AsyncMessageDecode> AsyncMessageDecode for RemoteProcedureCall<T> {
 }
 
 #[async_trait]
-impl AsyncMessageDecode for ControlRequest {
+impl AsyncMessageDecode for RpcRequest {
     async fn read_from<R>(input: &mut R) -> Result<Self>
     where
         R: AsyncReadExt + ?Sized + Unpin + Send,
@@ -58,16 +58,16 @@ impl AsyncMessageDecode for ControlRequest {
                 .await
                 .map(Self::PortMapping),
 
-            v => Err(Error::new(
+            _ => Err(Error::new(
                 ErrorKind::InvalidData,
-                format!("Given input(\"{v}\") is not an \"control::ControlRequest\"."),
+                "unknown discriminant for 'RpcRequest'",
             )),
         }
     }
 }
 
 #[async_trait]
-impl AsyncMessageDecode for ControlResponse {
+impl AsyncMessageDecode for RpcResponse {
     async fn read_from<R>(input: &mut R) -> Result<Self>
     where
         R: AsyncReadExt + ?Sized + Unpin + Send,
@@ -88,9 +88,9 @@ impl AsyncMessageDecode for ControlResponse {
                 .await
                 .map(Self::PortMapping),
 
-            v => Err(Error::new(
+            _ => Err(Error::new(
                 ErrorKind::InvalidData,
-                format!("Given input(\"{v}\") is not an \"control::ControlResponse\"."),
+                "unknown discriminant for 'RpcResponse'",
             )),
         }
     }
@@ -173,9 +173,9 @@ impl AsyncMessageDecode for PortMappingFound {
             Self::TO_AGENT_IDX => AgentSession::read_from(input).await.map(Self::ToAgent),
             Self::NONE_IDX => Ok(Self::None),
 
-            v => Err(Error::new(
+            _ => Err(Error::new(
                 ErrorKind::InvalidData,
-                format!("Given input(\"{v}\") is not an \"control::ControlResponse\"."),
+                "unknown discriminant for 'PortMappingFound'",
             )),
         }
     }

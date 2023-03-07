@@ -41,9 +41,9 @@ impl MessageDecode for Protocol {
             2 => Ok(Self::Udp),
             3 => Ok(Self::Both),
 
-            v => Err(Error::new(
+            _ => Err(Error::new(
                 ErrorKind::InvalidData,
-                format!("Given input(\"{v}\") is not an \"socket::Protocol\"."),
+                "unknown discriminant for 'Protocol'",
             )),
         }
     }
@@ -88,8 +88,8 @@ impl MessageDecode for SocketFlow {
         }
 
         Err(Error::new(
-            ErrorKind::InvalidInput,
-            "Invalid input for `SocketFlow`",
+            ErrorKind::InvalidData,
+            "unknown discriminant for 'SocketFlow'",
         ))
     }
 }

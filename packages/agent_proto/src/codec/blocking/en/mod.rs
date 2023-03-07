@@ -64,7 +64,7 @@ impl<T: MessageEncode> MessageEncode for Vec<T> {
     fn write_to<W: Write + ?Sized>(self, buf: &mut W) -> Result<()> {
         buf.write_u64::<BigEndian>(self.len() as _)?;
 
-        let mut bytes = Vec::with_capacity(self.len() * std::mem::size_of::<T>());
+        let mut bytes = Vec::with_capacity(self.len() * core::mem::size_of::<T>());
         self.into_iter().try_for_each(|e| e.write_to(&mut bytes))?;
 
         buf.write_all(&bytes)

@@ -19,7 +19,7 @@ pub struct RemoteProcedureCall<T> {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub enum ControlRequest {
+pub enum RpcRequest {
     Ping(Ping),
 
     KeepAlive(KeepAliveRequest),
@@ -29,7 +29,7 @@ pub enum ControlRequest {
     PortMapping(PortMappingRequest),
 }
 
-impl ControlRequest {
+impl RpcRequest {
     pub const PING_IDX: u8 = 1;
 
     pub const KEEP_ALIVE_IDX: u8 = 3;
@@ -52,7 +52,7 @@ impl ControlRequest {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub enum ControlResponse {
+pub enum RpcResponse {
     Pong(Pong),
 
     InvalidSignature,
@@ -65,7 +65,7 @@ pub enum ControlResponse {
     PortMapping(PortMappingResponse),
 }
 
-impl ControlResponse {
+impl RpcResponse {
     pub const PONG_IDX: u8 = 1;
 
     pub const INVALID_SIGNATURE_IDX: u8 = 2;

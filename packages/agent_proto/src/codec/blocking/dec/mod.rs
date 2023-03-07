@@ -32,25 +32,20 @@ impl MessageDecode for u64 {
     }
 }
 
+// Generics
 impl<T: MessageDecode> MessageDecode for Option<T> {
     fn read_from<R: Read + ?Sized>(input: &mut R) -> Result<Self> {
         match input.read_u8()? {
             0 => Ok(None),
-            1 => T::read_from(input).map(Some),
-
-            v => Err(Error::new(
-                ErrorKind::InvalidData,
-                format!("Given input(\"{v}\") is not an \"Option<T>\"."),
-            )),
+            _ => T::read_from(input).map(Some),
         }
     }
 }
 
 impl MessageDecode for Vec<u8> {
     fn read_from<R: Read + ?Sized>(input: &mut R) -> Result<Self> {
-        let capacity = input.read_u64::<BigEndian>()? as usize;
-        let mut vec = vec![0u8; capacity];
-
+        let len = input.read_u64::<BigEndian>()? as usize;
+        let mut vec = vec![0u8; len];
         input.read_exact(&mut vec)?;
         Ok(vec)
     }
@@ -58,10 +53,10 @@ impl MessageDecode for Vec<u8> {
 
 impl<T: MessageDecode> MessageDecode for Vec<T> {
     fn read_from<R: Read + ?Sized>(input: &mut R) -> Result<Self> {
-        let capacity = input.read_u64::<BigEndian>()? as usize;
-        let mut vec = Vec::with_capacity(capacity);
+        let len = input.read_u64::<BigEndian>()? as usize;
+        let mut vec = Vec::with_capacity(len);
 
-        for _ in 0..capacity {
+        for _ in 0..len {
             let entry = T::read_from(input)?;
             vec.push(entry);
         }
@@ -84,9 +79,9 @@ impl MessageDecode for SocketAddr {
                 0,
             ))),
 
-            v => Err(Error::new(
+            _ => Err(Error::new(
                 ErrorKind::InvalidData,
-                format!("Given input(\"{v}\") is not a \"SocketAddr\"."),
+                "unknown discriminant for 'SocketAddr'",
             )),
         }
     }
@@ -97,9 +92,10 @@ impl MessageDecode for IpAddr {
         match input.read_u8()? {
             4 => Ipv4Addr::read_from(input).map(IpAddr::V4),
             6 => Ipv6Addr::read_from(input).map(IpAddr::V6),
-            v => Err(Error::new(
+
+            _ => Err(Error::new(
                 ErrorKind::InvalidData,
-                format!("Given input(\"{v}\") is not a \"IpAddr\"."),
+                "unknown discriminant for 'IpAddr'",
             )),
         }
     }
@@ -108,7 +104,6 @@ impl MessageDecode for IpAddr {
 impl MessageDecode for Ipv4Addr {
     fn read_from<R: Read + ?Sized>(input: &mut R) -> Result<Self> {
         let mut bytes = [0u8; 4];
-
         input.read_exact(&mut bytes)?;
         Ok(Self::from(bytes))
     }
@@ -117,7 +112,6 @@ impl MessageDecode for Ipv4Addr {
 impl MessageDecode for Ipv6Addr {
     fn read_from<R: Read + ?Sized>(input: &mut R) -> Result<Self> {
         let mut bytes = [0u8; 16];
-
         input.read_exact(&mut bytes)?;
         Ok(Self::from(bytes))
     }

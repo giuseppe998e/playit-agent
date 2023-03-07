@@ -3,8 +3,8 @@ use std::io::{Result, Write};
 use byteorder::{BigEndian, WriteBytesExt};
 
 use crate::control::{
-    ControlRequest, ControlResponse, Ping, Pong, PortMappingFound, PortMappingRequest,
-    PortMappingResponse, RegisterRequest, RegisterResponse, RemoteProcedureCall, UdpChannelDetails,
+    Ping, Pong, PortMappingFound, PortMappingRequest, PortMappingResponse, RegisterRequest,
+    RegisterResponse, RemoteProcedureCall, RpcRequest, RpcResponse, UdpChannelDetails,
 };
 
 use super::MessageEncode;
@@ -17,7 +17,7 @@ impl<T: MessageEncode> MessageEncode for RemoteProcedureCall<T> {
     }
 }
 
-impl MessageEncode for ControlRequest {
+impl MessageEncode for RpcRequest {
     fn write_to<W: Write + ?Sized>(self, buf: &mut W) -> Result<()> {
         match self {
             Self::Ping(req) => {
@@ -46,7 +46,7 @@ impl MessageEncode for ControlRequest {
     }
 }
 
-impl MessageEncode for ControlResponse {
+impl MessageEncode for RpcResponse {
     fn write_to<W: Write + ?Sized>(self, buf: &mut W) -> Result<()> {
         match self {
             Self::Pong(resp) => {

@@ -4,8 +4,8 @@ use async_trait::async_trait;
 use tokio::io::AsyncWriteExt;
 
 use crate::control::{
-    ControlRequest, ControlResponse, Ping, Pong, PortMappingFound, PortMappingRequest,
-    PortMappingResponse, RegisterRequest, RegisterResponse, RemoteProcedureCall, UdpChannelDetails,
+    Ping, Pong, PortMappingFound, PortMappingRequest, PortMappingResponse, RegisterRequest,
+    RegisterResponse, RemoteProcedureCall, RpcRequest, RpcResponse, UdpChannelDetails,
 };
 
 use super::AsyncMessageEncode;
@@ -23,7 +23,7 @@ impl<T: AsyncMessageEncode + Send> AsyncMessageEncode for RemoteProcedureCall<T>
 }
 
 #[async_trait]
-impl AsyncMessageEncode for ControlRequest {
+impl AsyncMessageEncode for RpcRequest {
     async fn write_into<W>(self, buf: &mut W) -> Result<()>
     where
         W: AsyncWriteExt + ?Sized + Unpin + Send,
@@ -56,7 +56,7 @@ impl AsyncMessageEncode for ControlRequest {
 }
 
 #[async_trait]
-impl AsyncMessageEncode for ControlResponse {
+impl AsyncMessageEncode for RpcResponse {
     async fn write_into<W>(self, buf: &mut W) -> Result<()>
     where
         W: AsyncWriteExt + ?Sized + Unpin + Send,

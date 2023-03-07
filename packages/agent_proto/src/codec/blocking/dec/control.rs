@@ -9,9 +9,9 @@ use sha2::Sha256;
 use crate::{
     agent::AgentSession,
     control::{
-        ControlRequest, ControlResponse, KeepAliveRequest, Ping, Pong, PortMappingFound,
-        PortMappingRequest, PortMappingResponse, RegisterRequest, RegisterResponse,
-        RemoteProcedureCall, UdpChannelDetails, UdpChannelRequest,
+        KeepAliveRequest, Ping, Pong, PortMappingFound, PortMappingRequest, PortMappingResponse,
+        RegisterRequest, RegisterResponse, RemoteProcedureCall, RpcRequest, RpcResponse,
+        UdpChannelDetails, UdpChannelRequest,
     },
     hmac::HmacSign,
     socket::Socket,
@@ -32,7 +32,7 @@ impl<T: MessageDecode> MessageDecode for RemoteProcedureCall<T> {
     }
 }
 
-impl MessageDecode for ControlRequest {
+impl MessageDecode for RpcRequest {
     fn read_from<R: Read + ?Sized>(input: &mut R) -> Result<Self> {
         match input.read_u32::<BigEndian>()? as u8 {
             Self::PING_IDX => Ping::read_from(input).map(Self::Ping),
@@ -43,15 +43,15 @@ impl MessageDecode for ControlRequest {
             Self::UPD_CHANNEL_IDX => UdpChannelRequest::read_from(input).map(Self::UdpChannel),
             Self::PORT_MAPPING_IDX => PortMappingRequest::read_from(input).map(Self::PortMapping),
 
-            v => Err(Error::new(
+            _ => Err(Error::new(
                 ErrorKind::InvalidData,
-                format!("Given input(\"{v}\") is not an \"control::ControlRequest\"."),
+                "unknown discriminant for 'RpcRequest'",
             )),
         }
     }
 }
 
-impl MessageDecode for ControlResponse {
+impl MessageDecode for RpcResponse {
     fn read_from<R: Read + ?Sized>(input: &mut R) -> Result<Self> {
         match input.read_u32::<BigEndian>()? as u8 {
             Self::PONG_IDX => Pong::read_from(input).map(Self::Pong),
@@ -65,9 +65,9 @@ impl MessageDecode for ControlResponse {
             Self::UPD_CHANNEL_IDX => UdpChannelDetails::read_from(input).map(Self::UdpChannel),
             Self::PORT_MAPPING_IDX => PortMappingResponse::read_from(input).map(Self::PortMapping),
 
-            v => Err(Error::new(
+            _ => Err(Error::new(
                 ErrorKind::InvalidData,
-                format!("Given input(\"{v}\") is not an \"control::ControlResponse\"."),
+                "unknown discriminant for 'RpcResponse'",
             )),
         }
     }
@@ -130,9 +130,9 @@ impl MessageDecode for PortMappingFound {
             Self::TO_AGENT_IDX => AgentSession::read_from(input).map(Self::ToAgent),
             Self::NONE_IDX => Ok(Self::None),
 
-            v => Err(Error::new(
+            _ => Err(Error::new(
                 ErrorKind::InvalidData,
-                format!("Given input(\"{v}\") is not an \"control::ControlResponse\"."),
+                "unknown discriminant for 'PortMappingFound'",
             )),
         }
     }

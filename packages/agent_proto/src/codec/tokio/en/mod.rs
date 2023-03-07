@@ -64,7 +64,7 @@ impl<T: AsyncMessageEncode + Send + Sync> AsyncMessageEncode for Vec<T> {
     {
         buf.write_u64(self.len() as _).await?;
 
-        let mut bytes = Vec::with_capacity(self.len() * std::mem::size_of::<T>());
+        let mut bytes = Vec::with_capacity(self.len() * core::mem::size_of::<T>());
         for entry in self.into_iter() {
             entry.write_into(&mut bytes).await?;
         }

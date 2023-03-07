@@ -5,6 +5,7 @@ authors = { workspace = true }
 edition = { workspace = true }
 
 [features]
+default = ["bytes"]
 blocking = ["dep:byteorder"]
 bytes = ["blocking", "dep:bytes"]
 tokio = ["dep:async-trait", "dep:tokio"]
