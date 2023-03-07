@@ -1,4 +1,5 @@
-use crate::{agent::AgentSession, socket::Socket};
+use super::agent::AgentSession;
+use crate::socket::Socket;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct PortMappingRequest {

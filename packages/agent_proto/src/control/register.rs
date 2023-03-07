@@ -2,7 +2,7 @@ use std::net::SocketAddr;
 
 use sha2::Sha256;
 
-use crate::{agent::AgentSession, hmac::HmacSign};
+use super::{agent::AgentSession, HmacSign};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct RegisterRequest {

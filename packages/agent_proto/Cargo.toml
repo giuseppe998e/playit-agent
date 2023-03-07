@@ -4,21 +4,11 @@ version = { workspace = true }
 authors = { workspace = true }
 edition = { workspace = true }
 
-[features]
-default = ["bytes"]
-blocking = ["dep:byteorder"]
-bytes = ["blocking", "dep:bytes"]
-tokio = ["dep:async-trait", "dep:tokio"]
-
 [dependencies]
-async-trait = { workspace = true, optional = true }
-byteorder = { workspace = true, optional = true }
-bytes = { workspace = true, optional = true }
+bytes = { workspace = true }
 hmac = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
 sha2 = { workspace = true }
-tokio = { workspace = true, features = ["io-util"], optional = true }
 
 [dev-dependencies]
 rand = { workspace = true }
-tokio = { workspace = true, features = ["macros", "rt"] }

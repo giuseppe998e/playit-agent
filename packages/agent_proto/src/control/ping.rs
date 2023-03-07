@@ -1,6 +1,6 @@
 use std::net::SocketAddr;
 
-use crate::agent::AgentSession;
+use super::agent::AgentSession;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Ping {

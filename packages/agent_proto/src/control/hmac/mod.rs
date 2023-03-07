@@ -4,7 +4,7 @@ use sha2::{Digest, Sha256};
 pub(crate) mod signer;
 
 #[derive(Clone, Default)]
-pub struct HmacSign<D: Digest>(pub(super) GenericArray<u8, D::OutputSize>);
+pub struct HmacSign<D: Digest>(pub(crate) GenericArray<u8, D::OutputSize>);
 
 impl<D: Digest> HmacSign<D> {
     #[inline]
@@ -14,19 +14,19 @@ impl<D: Digest> HmacSign<D> {
 }
 
 // impl HmacSign<Sha224> {
-//     pub const BYTES: usize = 28;
+//     pub const SIZE: usize = 28;
 // }
 
 impl HmacSign<Sha256> {
-    pub const BYTES: usize = 32;
+    pub const SIZE: usize = 32;
 }
 
 // impl HmacSign<Sha384> {
-//     pub const BYTES: usize = 48;
+//     pub const SIZE: usize = 48;
 // }
 
 // impl HmacSign<Sha512> {
-//     pub const BYTES: usize = 48;
+//     pub const SIZE: usize = 48;
 // }
 
 impl<D: Digest> PartialEq for HmacSign<D> {

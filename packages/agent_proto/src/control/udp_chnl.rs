@@ -1,9 +1,11 @@
 use std::net::SocketAddr;
 
-pub type UdpChannelRequest = crate::agent::AgentSession;
+use bytes::Bytes;
+
+pub type UdpChannelRequest = super::agent::AgentSession;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct UdpChannelDetails {
     pub tunnel_addr: SocketAddr,
-    pub token: Vec<u8>,
+    pub token: Bytes,
 }
