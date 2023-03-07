@@ -5,9 +5,9 @@ use reqwest::{
     ClientBuilder as ReqwestBuilder, Url,
 };
 
-use crate::{Error, ApiClient, Result, DEFAULT_API_BASE_URL, DEFAULT_CLIENT_USER_AGENT};
+use crate::{ApiClient, Error, Result, DEFAULT_API_BASE_URL, DEFAULT_CLIENT_USER_AGENT};
 
-use super::{Authorized, Guest, ApiClientKind};
+use super::{ApiClientKind, Authorized, Guest};
 
 #[must_use]
 pub struct ApiClientBuilder<K: ApiClientKind = Guest> {
