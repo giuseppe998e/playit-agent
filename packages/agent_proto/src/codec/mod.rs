@@ -36,10 +36,7 @@ mod encode_decode {
         flow::{SocketFlow, SocketFlowV4, SocketFlowV6},
         hmac::{signer::HmacSigner, HmacSign},
         rpc::{
-            common::{
-                socket::{Port, Protocol},
-                AgentSession, Socket,
-            },
+            common::{AgentSession, Port, Protocol, Socket},
             request::{KeepAliveRequest, Ping, PortMappingRequest, RegisterRequest, RpcRequest},
             response::{
                 Pong, PortMappingFound, PortMappingResponse, RegisterResponse, RpcResponse,
