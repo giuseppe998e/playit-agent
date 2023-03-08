@@ -1,6 +1,6 @@
 use std::net::IpAddr;
 
-use playit_agent_proto::socket::Protocol;
+use playit_agent_proto::rpc::common::Protocol;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use uuid::Uuid;
