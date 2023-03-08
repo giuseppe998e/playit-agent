@@ -1,0 +1,53 @@
+pub mod common;
+pub mod request;
+pub mod response;
+
+use core::mem;
+use std::io;
+
+use bytes::{Buf, BufMut};
+
+use crate::{Decode, Encode};
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct RemoteProcedureCall<T> {
+    request_id: u64,
+    content: T,
+}
+
+impl<T> RemoteProcedureCall<T> {
+    pub fn new(request_id: u64, content: T) -> Self {
+        Self {
+            request_id,
+            content,
+        }
+    }
+
+    pub fn request_id(&self) -> u64 {
+        self.request_id
+    }
+
+    pub fn get_content(&self) -> &T {
+        &self.content
+    }
+}
+
+impl<T: Encode> Encode for RemoteProcedureCall<T> {
+    fn encode<B: BufMut>(self, buf: &mut B) -> io::Result<()> {
+        crate::codec::ensure!(buf.remaining_mut() > mem::size_of::<u64>());
+        buf.put_u64(self.request_id);
+        self.content.encode(buf)
+    }
+}
+
+impl<T: Decode> Decode for RemoteProcedureCall<T> {
+    fn decode<B: Buf>(buf: &mut B) -> io::Result<Self> {
+        let request_id = <u64>::decode(buf)?;
+        let content = T::decode(buf)?;
+
+        Ok(Self {
+            request_id,
+            content,
+        })
+    }
+}

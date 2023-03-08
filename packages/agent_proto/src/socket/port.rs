@@ -1,6 +1,10 @@
-use std::{iter, num::NonZeroU16, ops::RangeInclusive};
+use core::mem;
+use std::{io, iter, num::NonZeroU16, ops::RangeInclusive};
 
+use bytes::{Buf, BufMut};
 use serde::{ser::SerializeStruct, Deserialize, Deserializer, Serialize, Serializer};
+
+use crate::codec::{Decode, Encode};
 
 pub type PortRange = RangeInclusive<u16>;
 
@@ -53,6 +57,35 @@ impl From<PortRange> for Port {
         match (from, to) {
             _ if from < to => Self::Range(from..=to),
             _ => Self::Single(from),
+        }
+    }
+}
+
+impl Encode for Port {
+    fn encode<B: BufMut>(self, buf: &mut B) -> io::Result<()> {
+        crate::codec::ensure!(buf.remaining_mut() >= mem::size_of::<u16>() * 2);
+
+        let (start, end) = match self {
+            Self::Single(port) => (port, port),
+            Self::Range(range) => (*range.start(), *range.end()),
+        };
+
+        buf.put_u16(start);
+        buf.put_u16(end);
+
+        Ok(())
+    }
+}
+
+impl Decode for Port {
+    fn decode<B: Buf>(buf: &mut B) -> io::Result<Self> {
+        crate::codec::ensure!(buf.remaining() >= mem::size_of::<u16>() * 2);
+        let start = buf.get_u16();
+        let end = buf.get_u16();
+
+        match start == end {
+            true => Ok(Self::Single(start)),
+            false => Ok(Self::Range(start..=end)),
         }
     }
 }

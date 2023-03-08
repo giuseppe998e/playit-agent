@@ -2,8 +2,12 @@ mod flow;
 mod port;
 mod proto;
 
-use std::net::{IpAddr, SocketAddr};
+use std::{
+    io,
+    net::{IpAddr, SocketAddr},
+};
 
+use bytes::{Buf, BufMut};
 use serde::{Deserialize, Serialize};
 
 pub use flow::{
@@ -11,6 +15,8 @@ pub use flow::{
 };
 pub use port::{Port, PortRange};
 pub use proto::Protocol;
+
+use crate::codec::{Decode, Encode};
 
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
 pub struct Socket {
@@ -31,46 +37,20 @@ impl From<Socket> for Vec<SocketAddr> {
     }
 }
 
-// TODO Proper error needed
-// impl TryFrom<Vec<SocketAddr>> for Socket {
-//     type Error = ();
-//
-//     fn try_from(value: Vec<SocketAddr>) -> Result<Self, Self::Error> {
-//         if value.len() == 0 {
-//             return Err(());
-//         }
-//
-//         let (mut max, mut min) = (u16::MIN, u16::MAX);
-//         let addr = {
-//             let addr = value.iter().next();
-//             value.iter().map(Some).fold(addr, |init, addr| {
-//                 let (init_val, addr_val) = (init.unwrap(), addr.unwrap());
-//                 let addr_port = addr_val.port();
-//
-//                 if addr_port < min {
-//                     min = addr_port;
-//                 }
-//
-//                 if addr_port > max {
-//                     max = addr_port;
-//                 }
-//
-//                 (init_val.ip() == addr_val.ip()).then_some(init_val)
-//             })
-//         };
-//
-//         match addr {
-//             Some(addr_val) => {
-//                 let ip = addr_val.ip();
-//                 let port = Port::new(min, Some(max));
-//
-//                 Ok(Self {
-//                     ip,
-//                     port,
-//                     proto: Protocol::Both,
-//                 })
-//             }
-//             None => Err(()),
-//         }
-//     }
-// }
+impl Encode for Socket {
+    fn encode<B: BufMut>(self, buf: &mut B) -> io::Result<()> {
+        self.ip.encode(buf)?;
+        self.port.encode(buf)?;
+        self.proto.encode(buf)
+    }
+}
+
+impl Decode for Socket {
+    fn decode<B: Buf>(buf: &mut B) -> io::Result<Self> {
+        let ip = IpAddr::decode(buf)?;
+        let port = Port::decode(buf)?;
+        let proto = Protocol::decode(buf)?;
+
+        Ok(Self { ip, port, proto })
+    }
+}

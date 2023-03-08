@@ -1,5 +1,9 @@
-mod dec;
-mod en;
+mod decode;
+mod encode;
+
+// Export traits
+pub use decode::Decode;
+pub use encode::Encode;
 
 // Util macro
 macro_rules! ensure {
@@ -13,11 +17,7 @@ macro_rules! ensure {
     };
 }
 
-use ensure;
-
-// Export traits
-pub use dec::Decode;
-pub use en::Encode;
+pub(crate) use ensure;
 
 // Tests
 #[cfg(test)]
@@ -31,15 +31,19 @@ mod encode_decode {
     use bytes::BytesMut;
     use rand::random;
 
-    use super::{dec::Decode, en::Encode};
     use crate::{
-        control::{
-            hmac::{signer::HmacSigner, HmacSign},
-            AgentSession, KeepAliveRequest, Ping, Pong, PortMappingFound, PortMappingRequest,
-            PortMappingResponse, RegisterRequest, RegisterResponse, UdpChannelDetails,
+        codec::{Decode, Encode},
+        hmac::{signer::HmacSigner, HmacSign},
+        rpc::{
+            common::AgentSession,
+            request::{KeepAliveRequest, Ping, PortMappingRequest, RegisterRequest, RpcRequest},
+            response::{
+                Pong, PortMappingFound, PortMappingResponse, RegisterResponse, RpcResponse,
+                UdpChannelDetails,
+            },
+            RemoteProcedureCall,
         },
         socket::{Port, Protocol, Socket, SocketFlow, SocketFlowV4, SocketFlowV6},
-        RemoteProcedureCall, RpcRequest, RpcResponse,
     };
 
     #[test]
@@ -63,10 +67,7 @@ mod encode_decode {
     #[test]
     fn test_remoteprocedurecall() {
         let mut buf = BytesMut::with_capacity(mem::size_of::<RemoteProcedureCall<u64>>());
-        let data = RemoteProcedureCall::<u64> {
-            call_id: random(),
-            content: random(),
-        };
+        let data = RemoteProcedureCall::<u64>::new(random(), random());
 
         // Encode
         assert!(matches!(data.clone().encode(&mut buf), Ok(_)));

@@ -1,7 +1,3 @@
-mod control;
-mod hmac;
-mod socket;
-
 use core::mem;
 use std::{
     io::{self, Error, ErrorKind},
@@ -9,9 +5,6 @@ use std::{
 };
 
 use bytes::Buf;
-
-// export to sub-modules
-use super::ensure;
 
 pub trait Decode: Sized {
     fn decode<B: Buf>(buf: &mut B) -> io::Result<Self>;

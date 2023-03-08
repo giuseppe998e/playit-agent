@@ -1,7 +1,12 @@
+use core::mem;
 use std::{
-    mem,
+    io::{self, Error, ErrorKind},
     net::{SocketAddr, SocketAddrV4, SocketAddrV6},
 };
+
+use bytes::{Buf, BufMut};
+
+use crate::codec::{Decode, Encode};
 
 pub const FLOW_V6_ID: u64 = 0x6668_676F_6861_6366;
 pub const FLOW_V4_ID: u64 = 0x4448_474F_4841_4344;
@@ -78,6 +83,67 @@ impl SocketFlow {
     }
 }
 
+impl Encode for SocketFlow {
+    fn encode<B: BufMut>(self, buf: &mut B) -> io::Result<()> {
+        crate::codec::ensure!(buf.remaining_mut() > FLOW_ID_SIZE);
+
+        match self {
+            SocketFlow::V4(flow) => {
+                flow.encode(buf)?;
+                buf.put_u64(FLOW_V4_ID_OLD);
+            }
+            SocketFlow::V6(flow) => {
+                flow.encode(buf)?;
+                buf.put_u64(FLOW_V6_ID);
+            }
+        }
+
+        Ok(())
+    }
+}
+
+impl Decode for SocketFlow {
+    fn decode<B: Buf>(buf: &mut B) -> io::Result<Self> {
+        let buf_chunk = buf.chunk();
+        let buf_remaining = buf.remaining();
+
+        // V4
+        {
+            crate::codec::ensure!(buf_remaining >= SocketFlowV4::size() + FLOW_ID_SIZE);
+
+            let footer_id = {
+                let bytes = &buf_chunk[SocketFlowV4::size()..];
+                let bytes = unsafe { *(bytes as *const _ as *const [_; FLOW_ID_SIZE]) };
+                u64::from_be_bytes(bytes)
+            };
+
+            if matches!(footer_id, FLOW_V4_ID | FLOW_V4_ID_OLD) {
+                return SocketFlowV4::decode(buf).map(Self::V4);
+            }
+        }
+
+        // V6
+        {
+            crate::codec::ensure!(buf_remaining >= SocketFlowV6::size() + FLOW_ID_SIZE);
+
+            let footer_id = {
+                let bytes = &buf_chunk[SocketFlowV6::size()..];
+                let bytes = unsafe { *(bytes as *const _ as *const [_; FLOW_ID_SIZE]) };
+                u64::from_be_bytes(bytes)
+            };
+
+            if footer_id == FLOW_V6_ID {
+                return SocketFlowV6::decode(buf).map(Self::V6);
+            }
+        }
+
+        Err(Error::new(
+            ErrorKind::InvalidData,
+            "unknown discriminant for 'SocketFlow'",
+        ))
+    }
+}
+
 impl SocketFlowV4 {
     pub fn new(src: SocketAddrV4, dest: SocketAddrV4) -> Self {
         Self { src, dest }
@@ -106,6 +172,49 @@ impl SocketFlowV4 {
 impl From<SocketFlowV4> for SocketFlow {
     fn from(value: SocketFlowV4) -> Self {
         Self::V4(value)
+    }
+}
+
+impl Encode for SocketFlowV4 {
+    fn encode<B: BufMut>(self, buf: &mut B) -> io::Result<()> {
+        crate::codec::ensure!(
+            buf.remaining_mut() >= mem::size_of::<u32>() * 2 + mem::size_of::<u16>() * 2
+        );
+
+        let (src_ip, src_port) = {
+            let src = self.src();
+            (*src.ip(), src.port())
+        };
+
+        let (dest_ip, dest_port) = {
+            let dest = self.dest();
+            (*dest.ip(), dest.port())
+        };
+
+        buf.put_u32(src_ip.into());
+        buf.put_u32(dest_ip.into());
+        buf.put_u16(src_port);
+        buf.put_u16(dest_port);
+
+        Ok(())
+    }
+}
+
+impl Decode for SocketFlowV4 {
+    fn decode<B: Buf>(buf: &mut B) -> io::Result<Self> {
+        crate::codec::ensure!(
+            buf.remaining() >= mem::size_of::<u32>() * 2 + mem::size_of::<u16>() * 2
+        );
+
+        let src_ip = buf.get_u32();
+        let dest_ip = buf.get_u32();
+        let src_port = buf.get_u16();
+        let dest_port = buf.get_u16();
+
+        let src = SocketAddrV4::new(src_ip.into(), src_port);
+        let dest = SocketAddrV4::new(dest_ip.into(), dest_port);
+
+        Ok(Self::new(src, dest))
     }
 }
 
@@ -146,5 +255,54 @@ impl SocketFlowV6 {
 impl From<SocketFlowV6> for SocketFlow {
     fn from(value: SocketFlowV6) -> Self {
         Self::V6(value)
+    }
+}
+
+impl Encode for SocketFlowV6 {
+    fn encode<B: BufMut>(self, buf: &mut B) -> io::Result<()> {
+        crate::codec::ensure!(
+            buf.remaining_mut()
+                >= mem::size_of::<u128>() * 2 + mem::size_of::<u16>() * 2 + mem::size_of::<u32>()
+        );
+
+        let (src_ip, src_port) = {
+            let src = self.src();
+            (*src.ip(), src.port())
+        };
+
+        let (dest_ip, dest_port) = {
+            let dest = self.dest();
+            (*dest.ip(), dest.port())
+        };
+
+        let flowinfo = self.flowinfo();
+
+        buf.put_u128(src_ip.into());
+        buf.put_u128(dest_ip.into());
+        buf.put_u16(src_port);
+        buf.put_u16(dest_port);
+        buf.put_u32(flowinfo);
+
+        Ok(())
+    }
+}
+
+impl Decode for SocketFlowV6 {
+    fn decode<B: Buf>(buf: &mut B) -> io::Result<Self> {
+        crate::codec::ensure!(
+            buf.remaining()
+                >= mem::size_of::<u128>() * 2 + mem::size_of::<u16>() * 2 + mem::size_of::<u32>()
+        );
+
+        let src_ip = buf.get_u128();
+        let dest_ip = buf.get_u128();
+        let src_port = buf.get_u16();
+        let dest_port = buf.get_u16();
+        let flowinfo = buf.get_u32();
+
+        let src = SocketAddrV6::new(src_ip.into(), src_port, flowinfo, 0);
+        let dest = SocketAddrV6::new(dest_ip.into(), dest_port, flowinfo, 0);
+
+        Ok(Self::new(src, dest, flowinfo))
     }
 }

@@ -1,7 +1,3 @@
-mod control;
-mod hmac;
-mod socket;
-
 use core::mem;
 use std::{
     io,
@@ -9,9 +5,6 @@ use std::{
 };
 
 use bytes::{BufMut, Bytes, BytesMut};
-
-// export to sub-modules
-use super::ensure;
 
 pub trait Encode: Sized {
     fn encode<B: BufMut>(self, buf: &mut B) -> io::Result<()>;
