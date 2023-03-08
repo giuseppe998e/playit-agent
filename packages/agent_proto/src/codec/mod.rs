@@ -33,9 +33,13 @@ mod encode_decode {
 
     use crate::{
         codec::{Decode, Encode},
+        flow::{SocketFlow, SocketFlowV4, SocketFlowV6},
         hmac::{signer::HmacSigner, HmacSign},
         rpc::{
-            common::AgentSession,
+            common::{
+                socket::{Port, Protocol},
+                AgentSession, Socket,
+            },
             request::{KeepAliveRequest, Ping, PortMappingRequest, RegisterRequest, RpcRequest},
             response::{
                 Pong, PortMappingFound, PortMappingResponse, RegisterResponse, RpcResponse,
@@ -43,7 +47,6 @@ mod encode_decode {
             },
             RemoteProcedureCall,
         },
-        socket::{Port, Protocol, Socket, SocketFlow, SocketFlowV4, SocketFlowV6},
     };
 
     #[test]

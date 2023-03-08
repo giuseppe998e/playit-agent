@@ -5,8 +5,7 @@ use bytes::{Buf, BufMut};
 
 use crate::{
     codec::{Decode, Encode},
-    rpc::common::AgentSession,
-    socket::Socket,
+    rpc::common::{AgentSession, Socket},
 };
 
 #[derive(Clone, Debug, PartialEq, Eq)]
