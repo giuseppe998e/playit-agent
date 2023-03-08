@@ -1,5 +1,5 @@
 mod agent;
-pub mod socket;
+mod socket;
 
 pub use agent::AgentSession;
-pub use socket::Socket;
+pub use socket::{Port, PortRange, Protocol, Socket};
