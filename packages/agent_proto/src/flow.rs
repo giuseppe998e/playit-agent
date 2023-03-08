@@ -12,7 +12,7 @@ pub const FLOW_V6_ID: u64 = 0x6668_676F_6861_6366;
 pub const FLOW_V4_ID: u64 = 0x4448_474F_4841_4344;
 pub const FLOW_V4_ID_OLD: u64 = 0x5CB8_67CF_7881_73B2;
 
-pub const FLOW_ID_SIZE: usize = mem::size_of::<u64>();
+const FLOW_ID_SIZE: usize = mem::size_of::<u64>();
 const FLOW_V4_SIZE: usize = 12;
 const FLOW_V6_SIZE: usize = 40;
 
