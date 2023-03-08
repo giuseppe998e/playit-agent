@@ -2,7 +2,6 @@ pub mod common;
 pub mod request;
 pub mod response;
 
-use core::mem;
 use std::io;
 
 use bytes::{Buf, BufMut};
@@ -34,8 +33,7 @@ impl<T> RemoteProcedureCall<T> {
 
 impl<T: Encode> Encode for RemoteProcedureCall<T> {
     fn encode<B: BufMut>(self, buf: &mut B) -> io::Result<()> {
-        crate::codec::ensure!(buf.remaining_mut() > mem::size_of::<u64>());
-        buf.put_u64(self.request_id);
+        self.request_id.encode(buf)?;
         self.content.encode(buf)
     }
 }
