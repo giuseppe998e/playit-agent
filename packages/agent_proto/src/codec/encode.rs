@@ -4,15 +4,15 @@ use std::{
     net::{IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr, SocketAddrV4, SocketAddrV6},
 };
 
-use bytes::{BufMut, Bytes, BytesMut};
+use bytes::{BufMut, BytesMut};
 
 pub trait Encode: Sized {
     fn encode<B: BufMut>(self, buf: &mut B) -> io::Result<()>;
 
-    fn encode_into_bytes(self) -> io::Result<Bytes> {
+    fn encode_into_bytes(self) -> io::Result<BytesMut> {
         let mut bytes = BytesMut::with_capacity(mem::size_of::<Self>());
         self.encode(&mut bytes)?;
-        Ok(bytes.freeze())
+        Ok(bytes)
     }
 }
 

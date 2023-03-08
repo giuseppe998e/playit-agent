@@ -29,6 +29,10 @@ impl<T> RemoteProcedureCall<T> {
     pub fn get_content(&self) -> &T {
         &self.content
     }
+
+    pub fn unwrap(self) -> (u64, T) {
+        (self.request_id, self.content)
+    }
 }
 
 impl<T: Encode> Encode for RemoteProcedureCall<T> {
