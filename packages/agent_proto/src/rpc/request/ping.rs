@@ -1,3 +1,4 @@
+use core::mem;
 use std::io;
 
 use bytes::{Buf, BufMut};
@@ -21,10 +22,15 @@ impl Encode for Ping {
 }
 
 impl Decode for Ping {
-    fn decode<B: Buf>(buf: &mut B) -> io::Result<Self> {
-        let now = <u64>::decode(buf)?;
-        let session = Option::<AgentSession>::decode(buf)?;
+    fn check<B: AsRef<[u8]>>(buf: &mut io::Cursor<&B>) -> io::Result<()> {
+        crate::codec::checked_advance!(buf.remaining() > mem::size_of::<u64>());
+        Option::<AgentSession>::check(buf)
+    }
 
-        Ok(Ping { now, session })
+    fn decode<B: Buf>(buf: &mut B) -> Self {
+        let now = <u64>::decode(buf);
+        let session = Option::<AgentSession>::decode(buf);
+
+        Ping { now, session }
     }
 }

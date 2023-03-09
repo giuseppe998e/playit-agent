@@ -25,17 +25,20 @@ impl Encode for AgentSession {
 }
 
 impl Decode for AgentSession {
-    fn decode<B: Buf>(buf: &mut B) -> io::Result<Self> {
-        crate::codec::ensure!(buf.remaining() >= mem::size_of::<u64>() * 3);
+    fn check<B: AsRef<[u8]>>(buf: &mut io::Cursor<&B>) -> io::Result<()> {
+        crate::codec::checked_advance!(buf.remaining() >= mem::size_of::<u64>() * 3);
+        Ok(())
+    }
 
-        let id = buf.get_u64();
-        let account_id = buf.get_u64();
-        let agent_id = buf.get_u64();
+    fn decode<B: Buf>(buf: &mut B) -> Self {
+        let id = <u64>::decode(buf);
+        let account_id = <u64>::decode(buf);
+        let agent_id = <u64>::decode(buf);
 
-        Ok(Self {
+        Self {
             id,
             account_id,
             agent_id,
-        })
+        }
     }
 }

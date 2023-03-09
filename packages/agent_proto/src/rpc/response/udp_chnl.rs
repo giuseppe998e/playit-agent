@@ -24,17 +24,22 @@ impl Encode for UdpChannelDetails {
 }
 
 impl Decode for UdpChannelDetails {
-    fn decode<B: Buf>(buf: &mut B) -> io::Result<Self> {
-        let tunnel_addr = SocketAddr::decode(buf)?;
+    fn check<B: AsRef<[u8]>>(buf: &mut io::Cursor<&B>) -> io::Result<()> {
+        SocketAddr::check(buf)?;
 
-        let remaining = buf.remaining();
+        crate::codec::ensure!(buf.remaining() >= mem::size_of::<u64>());
+        let token_len = <u64>::decode(buf) as usize;
+        crate::codec::checked_advance!(buf.remaining() >= token_len);
 
-        crate::codec::ensure!(remaining >= mem::size_of::<u64>());
+        Ok(())
+    }
+
+    fn decode<B: Buf>(buf: &mut B) -> Self {
+        let tunnel_addr = SocketAddr::decode(buf);
+
         let token_len = buf.get_u64() as usize;
-
-        crate::codec::ensure!(remaining >= token_len);
         let token = buf.copy_to_bytes(token_len);
 
-        Ok(Self { tunnel_addr, token })
+        Self { tunnel_addr, token }
     }
 }

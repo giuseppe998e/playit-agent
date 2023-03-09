@@ -7,8 +7,32 @@ pub use encode::Encode;
 
 // Util macro
 macro_rules! ensure {
-    ($exprr:expr) => {
-        if !($exprr) {
+    ( $identifier:tt$(.$field_func:tt$(( $($argument:expr),* ))?)? > $right:expr ) => {
+        crate::codec::ensure! {@inner_macro
+            ( $identifier )
+            ( $($field_func$(( $($argument),* ))?)? )
+            ( <= )
+            ( $right )
+        }
+    };
+
+    ( $identifier:tt$(.$field_func:tt$(( $($argument:expr),* ))?)? >= $right:expr ) => {
+        crate::codec::ensure! {@inner_macro
+            ( $identifier )
+            ( $($field_func$(( $($argument),* ))?)? )
+            ( < )
+            ( $right )
+        }
+    };
+
+    // Inner expansion macro
+    {@inner_macro
+        ( $identifier:tt )
+        ( $($field_func:tt$(( $($argument:expr),* ))?)? )
+        ( $relation:tt )
+        ( $right:expr )
+    } => {
+        if $identifier$(.$field_func$(( $($argument:expr),* ))?)? $relation $right {
             return Err(::std::io::Error::new(
                 ::std::io::ErrorKind::UnexpectedEof,
                 "buffer is smaller than required",
@@ -17,13 +41,54 @@ macro_rules! ensure {
     };
 }
 
-pub(crate) use ensure;
+macro_rules! checked_advance {
+    ( $identifier:tt$(.$field_func:tt$(( $($argument:expr),* ))?)? > $right:expr ) => {
+        crate::codec::checked_advance! {@inner_macro
+            ( $identifier )
+            ( $($field_func$(( $($argument),* ))?)? )
+            ( > )
+            ( $right )
+        }
+    };
+
+    ( $identifier:tt.$field_func:tt$(( $($argument:expr),* ))? >= $right:expr ) => {
+        crate::codec::checked_advance! {@inner_macro
+            ( $identifier )
+            ( $field_func$(( $($argument),* ))? )
+            ( >= )
+            ( $right )
+        }
+    };
+
+    // Inner expansion macro
+    {@inner_macro
+        ( $identifier:tt )
+        ( $field_func:tt$(( $($argument:expr),* ))? )
+        ( $relation:tt )
+        ( $right:expr )
+    } => {
+        match $identifier.$field_func$(( $($argument:expr),* ))? $relation $right {
+            true => $identifier.advance($right),
+            false => {
+                return Err(::std::io::Error::new(
+                    ::std::io::ErrorKind::UnexpectedEof,
+                    "buffer is smaller than required",
+                ));
+            }
+        }
+    };
+}
+
+pub(crate) use {checked_advance, ensure};
 
 // Tests
 #[cfg(test)]
 mod encode_decode {
     use core::mem;
-    use std::net::{IpAddr, Ipv4Addr, SocketAddr, SocketAddrV4, SocketAddrV6};
+    use std::{
+        io,
+        net::{IpAddr, Ipv4Addr, SocketAddr, SocketAddrV4, SocketAddrV6},
+    };
 
     use bytes::BytesMut;
     use rand::random;
@@ -56,8 +121,10 @@ mod encode_decode {
         assert!(matches!(data.clone().encode(&mut buf), Ok(_)));
 
         // Decode
+        let mut buf_cursor = io::Cursor::new(&buf);
+        assert!(matches!(AgentSession::check(&mut buf_cursor), Ok(())));
         let dec_result = AgentSession::decode(&mut buf);
-        assert_eq!(data, dec_result.unwrap())
+        assert_eq!(data, dec_result)
     }
 
     #[test]
@@ -69,8 +136,13 @@ mod encode_decode {
         assert!(matches!(data.clone().encode(&mut buf), Ok(_)));
 
         // Decode
+        let mut buf_cursor = io::Cursor::new(&buf);
+        assert!(matches!(
+            RemoteProcedureCall::<u64>::check(&mut buf_cursor),
+            Ok(())
+        ));
         let dec_result = RemoteProcedureCall::<u64>::decode(&mut buf);
-        assert_eq!(data, dec_result.unwrap())
+        assert_eq!(data, dec_result)
     }
 
     #[test]
@@ -86,8 +158,10 @@ mod encode_decode {
         assert!(matches!(data.clone().encode(&mut buf), Ok(_)));
 
         // Decode
+        let mut buf_cursor = io::Cursor::new(&buf);
+        assert!(matches!(RpcRequest::check(&mut buf_cursor), Ok(())));
         let dec_result = RpcRequest::decode(&mut buf);
-        assert_eq!(data, dec_result.unwrap())
+        assert_eq!(data, dec_result)
     }
 
     #[test]
@@ -99,8 +173,10 @@ mod encode_decode {
         assert!(matches!(data.clone().encode(&mut buf), Ok(_)));
 
         // Decode
+        let mut buf_cursor = io::Cursor::new(&buf);
+        assert!(matches!(RpcResponse::check(&mut buf_cursor), Ok(())));
         let dec_result = RpcResponse::decode(&mut buf);
-        assert_eq!(data, dec_result.unwrap())
+        assert_eq!(data, dec_result)
     }
 
     #[test]
@@ -115,8 +191,10 @@ mod encode_decode {
         assert!(matches!(data.clone().encode(&mut buf), Ok(_)));
 
         // Decode
+        let mut buf_cursor = io::Cursor::new(&buf);
+        assert!(matches!(Ping::check(&mut buf_cursor), Ok(())));
         let dec_result = Ping::decode(&mut buf);
-        assert_eq!(data, dec_result.unwrap())
+        assert_eq!(data, dec_result)
     }
 
     #[test]
@@ -136,8 +214,10 @@ mod encode_decode {
         assert!(matches!(data.clone().encode(&mut buf), Ok(_)));
 
         // Decode
+        let mut buf_cursor = io::Cursor::new(&buf);
+        assert!(matches!(Pong::check(&mut buf_cursor), Ok(())));
         let dec_result = Pong::decode(&mut buf);
-        assert_eq!(data, dec_result.unwrap())
+        assert_eq!(data, dec_result)
     }
 
     #[test]
@@ -160,8 +240,10 @@ mod encode_decode {
         assert!(matches!(data.clone().encode(&mut buf), Ok(_)));
 
         // Decode
+        let mut buf_cursor = io::Cursor::new(&buf);
+        assert!(matches!(PortMappingRequest::check(&mut buf_cursor), Ok(())));
         let dec_result = PortMappingRequest::decode(&mut buf);
-        assert_eq!(data, dec_result.unwrap())
+        assert_eq!(data, dec_result)
     }
 
     #[test]
@@ -182,8 +264,13 @@ mod encode_decode {
         assert!(matches!(data.clone().encode(&mut buf), Ok(_)));
 
         // Decode
+        let mut buf_cursor = io::Cursor::new(&buf);
+        assert!(matches!(
+            PortMappingResponse::check(&mut buf_cursor),
+            Ok(())
+        ));
         let dec_result = PortMappingResponse::decode(&mut buf);
-        assert_eq!(data, dec_result.unwrap())
+        assert_eq!(data, dec_result)
     }
 
     #[test]
@@ -199,8 +286,10 @@ mod encode_decode {
         assert!(matches!(data.clone().encode(&mut buf), Ok(_)));
 
         // Decode
+        let mut buf_cursor = io::Cursor::new(&buf);
+        assert!(matches!(PortMappingFound::check(&mut buf_cursor), Ok(())));
         let dec_result = PortMappingFound::decode(&mut buf);
-        assert_eq!(data, dec_result.unwrap())
+        assert_eq!(data, dec_result)
     }
 
     #[test]
@@ -220,8 +309,10 @@ mod encode_decode {
         assert!(matches!(data.clone().encode(&mut buf), Ok(_)));
 
         // Decode
+        let mut buf_cursor = io::Cursor::new(&buf);
+        assert!(matches!(RegisterRequest::check(&mut buf_cursor), Ok(())));
         let dec_result = RegisterRequest::decode(&mut buf);
-        assert_eq!(data, dec_result.unwrap())
+        assert_eq!(data, dec_result)
     }
 
     #[test]
@@ -240,8 +331,10 @@ mod encode_decode {
         assert!(matches!(data.clone().encode(&mut buf), Ok(_)));
 
         // Decode
+        let mut buf_cursor = io::Cursor::new(&buf);
+        assert!(matches!(RegisterResponse::check(&mut buf_cursor), Ok(())));
         let dec_result = RegisterResponse::decode(&mut buf);
-        assert_eq!(data, dec_result.unwrap())
+        assert_eq!(data, dec_result)
     }
 
     #[test]
@@ -256,8 +349,10 @@ mod encode_decode {
         assert!(matches!(data.clone().encode(&mut buf), Ok(_)));
 
         // Decode
+        let mut buf_cursor = io::Cursor::new(&buf);
+        assert!(matches!(UdpChannelDetails::check(&mut buf_cursor), Ok(())));
         let dec_result = UdpChannelDetails::decode(&mut buf);
-        assert_eq!(data, dec_result.unwrap())
+        assert_eq!(data, dec_result)
     }
 
     // #[test]
@@ -277,8 +372,13 @@ mod encode_decode {
         assert!(matches!(data.clone().encode(&mut buf), Ok(_)));
 
         // Decode
+        let mut buf_cursor = io::Cursor::new(&buf);
+        assert!(matches!(
+            HmacSign::<sha2::Sha256>::check(&mut buf_cursor),
+            Ok(())
+        ));
         let dec_result = HmacSign::<sha2::Sha256>::decode(&mut buf);
-        assert_eq!(data, dec_result.unwrap())
+        assert_eq!(data, dec_result)
     }
 
     #[test]
@@ -294,8 +394,10 @@ mod encode_decode {
         assert!(matches!(data.clone().encode(&mut buf), Ok(_)));
 
         // Decode
+        let mut buf_cursor = io::Cursor::new(&buf);
+        assert!(matches!(Socket::check(&mut buf_cursor), Ok(())));
         let dec_result = Socket::decode(&mut buf);
-        assert_eq!(data, dec_result.unwrap())
+        assert_eq!(data, dec_result)
     }
 
     #[test]
@@ -307,8 +409,10 @@ mod encode_decode {
         assert!(matches!(data.clone().encode(&mut buf), Ok(_)));
 
         // Decode
+        let mut buf_cursor = io::Cursor::new(&buf);
+        assert!(matches!(Port::check(&mut buf_cursor), Ok(())));
         let dec_result = Port::decode(&mut buf);
-        assert_eq!(data, dec_result.unwrap())
+        assert_eq!(data, dec_result)
     }
 
     #[test]
@@ -320,8 +424,10 @@ mod encode_decode {
         assert!(matches!(data.clone().encode(&mut buf), Ok(_)));
 
         // Decode
+        let mut buf_cursor = io::Cursor::new(&buf);
+        assert!(matches!(Protocol::check(&mut buf_cursor), Ok(())));
         let dec_result = Protocol::decode(&mut buf);
-        assert_eq!(data, dec_result.unwrap())
+        assert_eq!(data, dec_result)
     }
 
     #[test]
@@ -336,8 +442,10 @@ mod encode_decode {
         assert!(matches!(data.clone().encode(&mut buf), Ok(_)));
 
         // Decode
+        let mut buf_cursor = io::Cursor::new(&buf);
+        assert!(matches!(SocketFlow::check(&mut buf_cursor), Ok(())));
         let dec_result = SocketFlow::decode(&mut buf);
-        assert_eq!(data, dec_result.unwrap())
+        assert_eq!(data, dec_result)
     }
 
     #[test]
@@ -353,7 +461,9 @@ mod encode_decode {
         assert!(matches!(data.clone().encode(&mut buf), Ok(_)));
 
         // Decode
+        let mut buf_cursor = io::Cursor::new(&buf);
+        assert!(matches!(SocketFlow::check(&mut buf_cursor), Ok(())));
         let dec_result = SocketFlow::decode(&mut buf);
-        assert_eq!(data, dec_result.unwrap())
+        assert_eq!(data, dec_result)
     }
 }

@@ -74,11 +74,14 @@ impl Encode for HmacSign<Sha256> {
 }
 
 impl Decode for HmacSign<Sha256> {
-    fn decode<B: Buf>(buf: &mut B) -> io::Result<Self> {
-        crate::codec::ensure!(buf.remaining() >= Self::SIZE);
+    fn check<B: AsRef<[u8]>>(buf: &mut io::Cursor<&B>) -> io::Result<()> {
+        crate::codec::checked_advance!(buf.remaining() >= Self::SIZE);
+        Ok(())
+    }
 
+    fn decode<B: Buf>(buf: &mut B) -> Self {
         let bytes = buf.copy_to_bytes(Self::SIZE);
         let bytes = GenericArray::<u8, _>::clone_from_slice(&bytes);
-        Ok(Self(bytes))
+        Self(bytes)
     }
 }

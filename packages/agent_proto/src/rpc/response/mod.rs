@@ -61,7 +61,7 @@ impl RpcResponse {
 
 impl Encode for RpcResponse {
     fn encode<B: BufMut>(self, buf: &mut B) -> io::Result<()> {
-        crate::codec::ensure!(buf.remaining_mut() > mem::size_of::<u32>());
+        crate::codec::ensure!(buf.remaining_mut() >= mem::size_of::<u32>());
 
         match self {
             Self::Pong(resp) => {
@@ -103,24 +103,44 @@ impl Encode for RpcResponse {
 }
 
 impl Decode for RpcResponse {
-    fn decode<B: Buf>(buf: &mut B) -> io::Result<Self> {
-        let discriminant = <u32>::decode(buf)? as u8;
+    fn check<B: AsRef<[u8]>>(buf: &mut io::Cursor<&B>) -> io::Result<()> {
+        crate::codec::ensure!(buf.remaining() >= mem::size_of::<u32>());
+        let discriminant = <u32>::decode(buf) as u8;
+
         match discriminant {
-            Self::PONG_IDX => Pong::decode(buf).map(Self::Pong),
+            Self::PONG_IDX => Pong::check(buf),
 
-            Self::INVALID_SIGNATURE_IDX => Ok(Self::InvalidSignature),
-            Self::UNAUTHORIZED_IDX => Ok(Self::Unauthorized),
-            Self::REQUEST_QUEUED_IDX => Ok(Self::RequestQueued),
-            Self::TRY_AGAIN_LATER_IDX => Ok(Self::TryAgainLater),
+            Self::INVALID_SIGNATURE_IDX
+            | Self::UNAUTHORIZED_IDX
+            | Self::REQUEST_QUEUED_IDX
+            | Self::TRY_AGAIN_LATER_IDX => Ok(()),
 
-            Self::REGISTER_IDX => RegisterResponse::decode(buf).map(Self::Register),
-            Self::UPD_CHANNEL_IDX => UdpChannelDetails::decode(buf).map(Self::UdpChannel),
-            Self::PORT_MAPPING_IDX => PortMappingResponse::decode(buf).map(Self::PortMapping),
+            Self::REGISTER_IDX => RegisterResponse::check(buf),
+            Self::UPD_CHANNEL_IDX => UdpChannelDetails::check(buf),
+            Self::PORT_MAPPING_IDX => PortMappingResponse::check(buf),
 
             _ => Err(Error::new(
                 ErrorKind::InvalidData,
                 "unknown discriminant for 'RpcResponse'",
             )),
+        }
+    }
+
+    fn decode<B: Buf>(buf: &mut B) -> Self {
+        let discriminant = <u32>::decode(buf) as u8;
+        match discriminant {
+            Self::PONG_IDX => Self::Pong(Pong::decode(buf)),
+
+            Self::INVALID_SIGNATURE_IDX => Self::InvalidSignature,
+            Self::UNAUTHORIZED_IDX => Self::Unauthorized,
+            Self::REQUEST_QUEUED_IDX => Self::RequestQueued,
+            Self::TRY_AGAIN_LATER_IDX => Self::TryAgainLater,
+
+            Self::REGISTER_IDX => Self::Register(RegisterResponse::decode(buf)),
+            Self::UPD_CHANNEL_IDX => Self::UdpChannel(UdpChannelDetails::decode(buf)),
+            Self::PORT_MAPPING_IDX => Self::PortMapping(PortMappingResponse::decode(buf)),
+
+            _ => panic!("unknown discriminant for 'RpcResponse'"),
         }
     }
 }

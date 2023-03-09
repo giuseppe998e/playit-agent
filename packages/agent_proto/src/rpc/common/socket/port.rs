@@ -78,14 +78,18 @@ impl Encode for Port {
 }
 
 impl Decode for Port {
-    fn decode<B: Buf>(buf: &mut B) -> io::Result<Self> {
-        crate::codec::ensure!(buf.remaining() >= mem::size_of::<u16>() * 2);
-        let start = buf.get_u16();
-        let end = buf.get_u16();
+    fn check<B: AsRef<[u8]>>(buf: &mut io::Cursor<&B>) -> io::Result<()> {
+        crate::codec::checked_advance!(buf.remaining() >= mem::size_of::<u16>() * 2);
+        Ok(())
+    }
+
+    fn decode<B: Buf>(buf: &mut B) -> Self {
+        let start = <u16>::decode(buf);
+        let end = <u16>::decode(buf);
 
         match start == end {
-            true => Ok(Self::Single(start)),
-            false => Ok(Self::Range(start..=end)),
+            true => Self::Single(start),
+            false => Self::Range(start..=end),
         }
     }
 }

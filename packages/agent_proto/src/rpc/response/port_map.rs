@@ -30,11 +30,16 @@ impl Encode for PortMappingResponse {
 }
 
 impl Decode for PortMappingResponse {
-    fn decode<B: Buf>(buf: &mut B) -> io::Result<Self> {
-        let socket = Socket::decode(buf)?;
-        let found = Option::<PortMappingFound>::decode(buf)?;
+    fn check<B: AsRef<[u8]>>(buf: &mut io::Cursor<&B>) -> io::Result<()> {
+        Socket::check(buf)?;
+        Option::<PortMappingFound>::check(buf)
+    }
 
-        Ok(Self { socket, found })
+    fn decode<B: Buf>(buf: &mut B) -> Self {
+        let socket = Socket::decode(buf);
+        let found = Option::<PortMappingFound>::decode(buf);
+
+        Self { socket, found }
     }
 }
 
@@ -52,7 +57,7 @@ impl PortMappingFound {
 
 impl Encode for PortMappingFound {
     fn encode<B: BufMut>(self, buf: &mut B) -> io::Result<()> {
-        crate::codec::ensure!(buf.remaining_mut() > mem::size_of::<u32>());
+        crate::codec::ensure!(buf.remaining_mut() >= mem::size_of::<u32>());
 
         match self {
             Self::ToAgent(resp) => {
@@ -68,16 +73,28 @@ impl Encode for PortMappingFound {
 }
 
 impl Decode for PortMappingFound {
-    fn decode<B: Buf>(buf: &mut B) -> io::Result<Self> {
-        let discriminant = <u32>::decode(buf)? as u8;
+    fn check<B: AsRef<[u8]>>(buf: &mut io::Cursor<&B>) -> io::Result<()> {
+        crate::codec::ensure!(buf.remaining() >= mem::size_of::<u32>());
+        let discriminant = <u32>::decode(buf) as u8;
+
         match discriminant {
-            Self::TO_AGENT_IDX => AgentSession::decode(buf).map(Self::ToAgent),
-            Self::NONE_IDX => Ok(Self::None),
+            Self::TO_AGENT_IDX => AgentSession::check(buf),
+            Self::NONE_IDX => Ok(()),
 
             _ => Err(Error::new(
                 ErrorKind::InvalidData,
                 "unknown discriminant for 'PortMappingFound'",
             )),
+        }
+    }
+
+    fn decode<B: Buf>(buf: &mut B) -> Self {
+        let discriminant = <u32>::decode(buf) as u8;
+        match discriminant {
+            Self::TO_AGENT_IDX => Self::ToAgent(AgentSession::decode(buf)),
+            Self::NONE_IDX => Self::None,
+
+            _ => panic!("unknown discriminant for 'PortMappingFound'"),
         }
     }
 }

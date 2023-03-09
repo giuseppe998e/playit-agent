@@ -42,11 +42,17 @@ impl Encode for Socket {
 }
 
 impl Decode for Socket {
-    fn decode<B: Buf>(buf: &mut B) -> io::Result<Self> {
-        let ip = IpAddr::decode(buf)?;
-        let port = Port::decode(buf)?;
-        let proto = Protocol::decode(buf)?;
+    fn check<B: AsRef<[u8]>>(buf: &mut io::Cursor<&B>) -> io::Result<()> {
+        IpAddr::check(buf)?;
+        Port::check(buf)?;
+        Protocol::check(buf)
+    }
 
-        Ok(Self { ip, port, proto })
+    fn decode<B: Buf>(buf: &mut B) -> Self {
+        let ip = IpAddr::decode(buf);
+        let port = Port::decode(buf);
+        let proto = Protocol::decode(buf);
+
+        Self { ip, port, proto }
     }
 }

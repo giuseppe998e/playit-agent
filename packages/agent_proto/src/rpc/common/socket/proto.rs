@@ -1,3 +1,4 @@
+use core::mem;
 use std::io::{self, Error, ErrorKind};
 
 use bytes::{Buf, BufMut};
@@ -33,17 +34,27 @@ impl Encode for Protocol {
 }
 
 impl Decode for Protocol {
-    fn decode<B: Buf>(buf: &mut B) -> io::Result<Self> {
-        let discriminant = <u8>::decode(buf)?;
-        match discriminant {
-            1 => Ok(Self::Tcp),
-            2 => Ok(Self::Udp),
-            3 => Ok(Self::Both),
+    fn check<B: AsRef<[u8]>>(buf: &mut io::Cursor<&B>) -> io::Result<()> {
+        crate::codec::ensure!(buf.remaining() >= mem::size_of::<u8>());
+        let discriminant = <u8>::decode(buf);
 
+        match discriminant {
+            1..=3 => Ok(()),
             _ => Err(Error::new(
                 ErrorKind::InvalidData,
                 "unknown discriminant for 'Protocol'",
             )),
+        }
+    }
+
+    fn decode<B: Buf>(buf: &mut B) -> Self {
+        let discriminant = <u8>::decode(buf);
+        match discriminant {
+            1 => Self::Tcp,
+            2 => Self::Udp,
+            3 => Self::Both,
+
+            _ => panic!("unknown discriminant for 'Protocol'"),
         }
     }
 }

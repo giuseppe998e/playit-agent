@@ -2,6 +2,7 @@ pub mod common;
 pub mod request;
 pub mod response;
 
+use core::mem;
 use std::io;
 
 use bytes::{Buf, BufMut};
@@ -43,13 +44,18 @@ impl<T: Encode> Encode for RemoteProcedureCall<T> {
 }
 
 impl<T: Decode> Decode for RemoteProcedureCall<T> {
-    fn decode<B: Buf>(buf: &mut B) -> io::Result<Self> {
-        let request_id = <u64>::decode(buf)?;
-        let content = T::decode(buf)?;
+    fn check<B: AsRef<[u8]>>(buf: &mut io::Cursor<&B>) -> io::Result<()> {
+        crate::codec::checked_advance!(buf.remaining() > mem::size_of::<u64>());
+        T::check(buf)
+    }
 
-        Ok(Self {
+    fn decode<B: Buf>(buf: &mut B) -> Self {
+        let request_id = <u64>::decode(buf);
+        let content = T::decode(buf);
+
+        Self {
             request_id,
             content,
-        })
+        }
     }
 }

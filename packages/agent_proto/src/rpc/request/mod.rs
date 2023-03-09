@@ -82,21 +82,38 @@ impl Encode for RpcRequest {
 }
 
 impl Decode for RpcRequest {
-    fn decode<B: Buf>(buf: &mut B) -> io::Result<Self> {
-        let discriminant = <u32>::decode(buf)? as u8;
+    fn check<B: AsRef<[u8]>>(buf: &mut io::Cursor<&B>) -> io::Result<()> {
+        crate::codec::ensure!(buf.remaining() > mem::size_of::<u32>());
+        let discriminant = <u32>::decode(buf) as u8;
+
         match discriminant {
-            Self::PING_IDX => Ping::decode(buf).map(Self::Ping),
+            Self::PING_IDX => Ping::check(buf),
 
-            Self::KEEP_ALIVE_IDX => KeepAliveRequest::decode(buf).map(Self::KeepAlive),
+            Self::KEEP_ALIVE_IDX => KeepAliveRequest::check(buf),
 
-            Self::REGISTER_IDX => RegisterRequest::decode(buf).map(Self::Register),
-            Self::UPD_CHANNEL_IDX => UdpChannelRequest::decode(buf).map(Self::UdpChannel),
-            Self::PORT_MAPPING_IDX => PortMappingRequest::decode(buf).map(Self::PortMapping),
+            Self::REGISTER_IDX => RegisterRequest::check(buf),
+            Self::UPD_CHANNEL_IDX => UdpChannelRequest::check(buf),
+            Self::PORT_MAPPING_IDX => PortMappingRequest::check(buf),
 
             _ => Err(Error::new(
                 ErrorKind::InvalidData,
                 "unknown discriminant for 'RpcRequest'",
             )),
+        }
+    }
+
+    fn decode<B: Buf>(buf: &mut B) -> Self {
+        let discriminant = <u32>::decode(buf) as u8;
+        match discriminant {
+            Self::PING_IDX => Self::Ping(Ping::decode(buf)),
+
+            Self::KEEP_ALIVE_IDX => Self::KeepAlive(KeepAliveRequest::decode(buf)),
+
+            Self::REGISTER_IDX => Self::Register(RegisterRequest::decode(buf)),
+            Self::UPD_CHANNEL_IDX => Self::UdpChannel(UdpChannelRequest::decode(buf)),
+            Self::PORT_MAPPING_IDX => Self::PortMapping(PortMappingRequest::decode(buf)),
+
+            _ => panic!("unknown discriminant for 'RpcRequest'"),
         }
     }
 }

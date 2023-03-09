@@ -21,13 +21,18 @@ impl Encode for RegisterResponse {
 }
 
 impl Decode for RegisterResponse {
-    fn decode<B: Buf>(buf: &mut B) -> io::Result<Self> {
-        let session = AgentSession::decode(buf)?;
-        let expires_at = <u64>::decode(buf)?;
+    fn check<B: AsRef<[u8]>>(buf: &mut io::Cursor<&B>) -> io::Result<()> {
+        AgentSession::check(buf)?;
+        <u64>::check(buf)
+    }
 
-        Ok(Self {
+    fn decode<B: Buf>(buf: &mut B) -> Self {
+        let session = AgentSession::decode(buf);
+        let expires_at = <u64>::decode(buf);
+
+        Self {
             session,
             expires_at,
-        })
+        }
     }
 }

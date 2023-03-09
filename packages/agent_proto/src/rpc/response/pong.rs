@@ -33,18 +33,27 @@ impl Encode for Pong {
 }
 
 impl Decode for Pong {
-    fn decode<B: Buf>(buf: &mut B) -> io::Result<Self> {
-        crate::codec::ensure!(buf.remaining() >= mem::size_of::<u64>() * 3 + mem::size_of::<u32>());
-        let request_now = buf.get_u64();
-        let server_now = buf.get_u64();
-        let server_id = buf.get_u64();
-        let data_center_id = buf.get_u32();
+    fn check<B: AsRef<[u8]>>(buf: &mut io::Cursor<&B>) -> io::Result<()> {
+        crate::codec::checked_advance!(
+            buf.remaining() > mem::size_of::<u64>() * 3 + mem::size_of::<u32>()
+        );
 
-        let client_addr = SocketAddr::decode(buf)?;
-        let tunnel_addr = SocketAddr::decode(buf)?;
-        let session_expire_at = Option::<u64>::decode(buf)?;
+        SocketAddr::check(buf)?;
+        SocketAddr::check(buf)?;
+        Option::<u64>::check(buf)
+    }
 
-        Ok(Self {
+    fn decode<B: Buf>(buf: &mut B) -> Self {
+        let request_now = <u64>::decode(buf);
+        let server_now = <u64>::decode(buf);
+        let server_id = <u64>::decode(buf);
+        let data_center_id = <u32>::decode(buf);
+
+        let client_addr = SocketAddr::decode(buf);
+        let tunnel_addr = SocketAddr::decode(buf);
+        let session_expire_at = Option::<u64>::decode(buf);
+
+        Self {
             request_now,
             server_now,
             server_id,
@@ -52,6 +61,6 @@ impl Decode for Pong {
             client_addr,
             tunnel_addr,
             session_expire_at,
-        })
+        }
     }
 }

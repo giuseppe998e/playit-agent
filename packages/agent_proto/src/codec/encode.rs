@@ -23,8 +23,8 @@ macro_rules! encode_impl {
             impl Encode for $type {
                 fn encode<B: BufMut>(self, buf: &mut B) -> io::Result<()> {
                     super::ensure!(buf.remaining_mut() >= mem::size_of::<Self>());
-                    let value = buf.$buf_put(self);
-                    Ok(value)
+                    buf.$buf_put(self);
+                    Ok(())
                 }
             }
         )+

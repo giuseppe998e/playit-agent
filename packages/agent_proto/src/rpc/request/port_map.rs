@@ -14,11 +14,16 @@ pub struct PortMappingRequest {
 }
 
 impl Decode for PortMappingRequest {
-    fn decode<B: Buf>(buf: &mut B) -> io::Result<Self> {
-        let session = AgentSession::decode(buf)?;
-        let socket = Socket::decode(buf)?;
+    fn check<B: AsRef<[u8]>>(buf: &mut io::Cursor<&B>) -> io::Result<()> {
+        AgentSession::check(buf)?;
+        Socket::check(buf)
+    }
 
-        Ok(Self { session, socket })
+    fn decode<B: Buf>(buf: &mut B) -> Self {
+        let session = AgentSession::decode(buf);
+        let socket = Socket::decode(buf);
+
+        Self { session, socket }
     }
 }
 

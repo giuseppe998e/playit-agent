@@ -38,18 +38,24 @@ impl Encode for RegisterRequest {
 }
 
 impl Decode for RegisterRequest {
-    fn decode<B: Buf>(buf: &mut B) -> io::Result<Self> {
-        crate::codec::ensure!(buf.remaining() >= mem::size_of::<u64>() * 4);
-        let account_id = buf.get_u64();
-        let agent_id = buf.get_u64();
-        let agent_version = buf.get_u64();
-        let timestamp = buf.get_u64();
+    fn check<B: AsRef<[u8]>>(buf: &mut io::Cursor<&B>) -> io::Result<()> {
+        crate::codec::checked_advance!(buf.remaining() > mem::size_of::<u64>() * 4);
+        SocketAddr::check(buf)?;
+        SocketAddr::check(buf)?;
+        HmacSign::<Sha256>::check(buf)
+    }
 
-        let client_addr = SocketAddr::decode(buf)?;
-        let tunnel_addr = SocketAddr::decode(buf)?;
-        let signature = HmacSign::<Sha256>::decode(buf)?;
+    fn decode<B: Buf>(buf: &mut B) -> Self {
+        let account_id = <u64>::decode(buf);
+        let agent_id = <u64>::decode(buf);
+        let agent_version = <u64>::decode(buf);
+        let timestamp = <u64>::decode(buf);
 
-        Ok(Self {
+        let client_addr = SocketAddr::decode(buf);
+        let tunnel_addr = SocketAddr::decode(buf);
+        let signature = HmacSign::<Sha256>::decode(buf);
+
+        Self {
             account_id,
             agent_id,
             agent_version,
@@ -57,6 +63,6 @@ impl Decode for RegisterRequest {
             client_addr,
             tunnel_addr,
             signature,
-        })
+        }
     }
 }
