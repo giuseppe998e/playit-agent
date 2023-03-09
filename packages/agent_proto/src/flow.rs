@@ -103,7 +103,7 @@ impl Encode for SocketFlow {
 }
 
 impl Decode for SocketFlow {
-    fn check<B: AsRef<[u8]>>(buf: &mut io::Cursor<&B>) -> io::Result<()> {
+    fn check<B: AsRef<[u8]>>(buf: &mut io::Cursor<B>) -> io::Result<()> {
         let buf_chunk = buf.chunk();
         let buf_remaining = buf.remaining();
 
@@ -240,7 +240,7 @@ impl Encode for SocketFlowV4 {
 }
 
 impl Decode for SocketFlowV4 {
-    fn check<B: AsRef<[u8]>>(buf: &mut io::Cursor<&B>) -> io::Result<()> {
+    fn check<B: AsRef<[u8]>>(buf: &mut io::Cursor<B>) -> io::Result<()> {
         crate::codec::checked_advance!(
             buf.remaining() >= mem::size_of::<u32>() * 2 + mem::size_of::<u16>() * 2
         );
@@ -331,7 +331,7 @@ impl Encode for SocketFlowV6 {
 }
 
 impl Decode for SocketFlowV6 {
-    fn check<B: AsRef<[u8]>>(buf: &mut io::Cursor<&B>) -> io::Result<()> {
+    fn check<B: AsRef<[u8]>>(buf: &mut io::Cursor<B>) -> io::Result<()> {
         crate::codec::checked_advance!(
             buf.remaining()
                 >= mem::size_of::<u128>() * 2 + mem::size_of::<u16>() * 2 + mem::size_of::<u32>()

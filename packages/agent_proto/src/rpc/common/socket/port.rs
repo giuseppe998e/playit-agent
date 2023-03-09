@@ -78,7 +78,7 @@ impl Encode for Port {
 }
 
 impl Decode for Port {
-    fn check<B: AsRef<[u8]>>(buf: &mut io::Cursor<&B>) -> io::Result<()> {
+    fn check<B: AsRef<[u8]>>(buf: &mut io::Cursor<B>) -> io::Result<()> {
         crate::codec::checked_advance!(buf.remaining() >= mem::size_of::<u16>() * 2);
         Ok(())
     }

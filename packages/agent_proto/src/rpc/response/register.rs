@@ -21,7 +21,7 @@ impl Encode for RegisterResponse {
 }
 
 impl Decode for RegisterResponse {
-    fn check<B: AsRef<[u8]>>(buf: &mut io::Cursor<&B>) -> io::Result<()> {
+    fn check<B: AsRef<[u8]>>(buf: &mut io::Cursor<B>) -> io::Result<()> {
         AgentSession::check(buf)?;
         <u64>::check(buf)
     }

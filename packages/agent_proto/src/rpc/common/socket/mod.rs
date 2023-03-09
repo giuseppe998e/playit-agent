@@ -42,7 +42,7 @@ impl Encode for Socket {
 }
 
 impl Decode for Socket {
-    fn check<B: AsRef<[u8]>>(buf: &mut io::Cursor<&B>) -> io::Result<()> {
+    fn check<B: AsRef<[u8]>>(buf: &mut io::Cursor<B>) -> io::Result<()> {
         IpAddr::check(buf)?;
         Port::check(buf)?;
         Protocol::check(buf)

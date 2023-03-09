@@ -8,7 +8,7 @@ use bytes::Buf;
 
 pub trait Decode: Sized {
     /// This method checks the contents of the buffer.
-    fn check<B: AsRef<[u8]>>(buf: &mut io::Cursor<&B>) -> io::Result<()>;
+    fn check<B: AsRef<[u8]>>(buf: &mut io::Cursor<B>) -> io::Result<()>;
 
     /// Using this method without having called
     /// `Decode::check(..)` could result in a `panci!(...)`.
@@ -20,7 +20,7 @@ macro_rules! decode_impl {
     ( $( $type:ty, $buf_get:tt );+ $(;)? ) => {
         $(
             impl Decode for $type {
-                fn check<B: AsRef<[u8]>>(buf: &mut io::Cursor<&B>) -> io::Result<()> {
+                fn check<B: AsRef<[u8]>>(buf: &mut io::Cursor<B>) -> io::Result<()> {
                     super::checked_advance!(buf.remaining() >= mem::size_of::<$type>());
                     Ok(())
                 }
@@ -50,7 +50,7 @@ decode_impl!(
 
 // Array of u8
 impl<const LEN: usize> Decode for [u8; LEN] {
-    fn check<B: AsRef<[u8]>>(buf: &mut io::Cursor<&B>) -> io::Result<()> {
+    fn check<B: AsRef<[u8]>>(buf: &mut io::Cursor<B>) -> io::Result<()> {
         super::checked_advance!(buf.remaining() >= LEN);
         Ok(())
     }
@@ -64,7 +64,7 @@ impl<const LEN: usize> Decode for [u8; LEN] {
 
 // Option
 impl<T: Decode> Decode for Option<T> {
-    fn check<B: AsRef<[u8]>>(buf: &mut io::Cursor<&B>) -> io::Result<()> {
+    fn check<B: AsRef<[u8]>>(buf: &mut io::Cursor<B>) -> io::Result<()> {
         super::ensure!(buf.remaining() >= mem::size_of::<u8>());
         let discriminant = <u8>::decode(buf);
 
@@ -92,7 +92,7 @@ impl<T: Decode> Decode for Option<T> {
 
 // SocketAddr
 impl Decode for SocketAddr {
-    fn check<B: AsRef<[u8]>>(buf: &mut io::Cursor<&B>) -> io::Result<()> {
+    fn check<B: AsRef<[u8]>>(buf: &mut io::Cursor<B>) -> io::Result<()> {
         super::ensure!(buf.remaining() > mem::size_of::<u8>());
         let discriminant = <u8>::decode(buf);
 
@@ -119,7 +119,7 @@ impl Decode for SocketAddr {
 }
 
 impl Decode for SocketAddrV4 {
-    fn check<B: AsRef<[u8]>>(buf: &mut io::Cursor<&B>) -> io::Result<()> {
+    fn check<B: AsRef<[u8]>>(buf: &mut io::Cursor<B>) -> io::Result<()> {
         Ipv4Addr::check(buf)?;
         <u16>::check(buf)
     }
@@ -133,7 +133,7 @@ impl Decode for SocketAddrV4 {
 }
 
 impl Decode for SocketAddrV6 {
-    fn check<B: AsRef<[u8]>>(buf: &mut io::Cursor<&B>) -> io::Result<()> {
+    fn check<B: AsRef<[u8]>>(buf: &mut io::Cursor<B>) -> io::Result<()> {
         Ipv6Addr::check(buf)?;
         <u16>::check(buf)
     }
@@ -148,7 +148,7 @@ impl Decode for SocketAddrV6 {
 
 // IpAddr
 impl Decode for IpAddr {
-    fn check<B: AsRef<[u8]>>(buf: &mut io::Cursor<&B>) -> io::Result<()> {
+    fn check<B: AsRef<[u8]>>(buf: &mut io::Cursor<B>) -> io::Result<()> {
         super::ensure!(buf.remaining() > mem::size_of::<u8>());
         let discriminant = <u8>::decode(buf);
 
@@ -176,7 +176,7 @@ impl Decode for IpAddr {
 
 impl Decode for Ipv4Addr {
     #[inline]
-    fn check<B: AsRef<[u8]>>(buf: &mut io::Cursor<&B>) -> io::Result<()> {
+    fn check<B: AsRef<[u8]>>(buf: &mut io::Cursor<B>) -> io::Result<()> {
         <[u8; 4]>::check(buf)
     }
 
@@ -188,7 +188,7 @@ impl Decode for Ipv4Addr {
 
 impl Decode for Ipv6Addr {
     #[inline]
-    fn check<B: AsRef<[u8]>>(buf: &mut io::Cursor<&B>) -> io::Result<()> {
+    fn check<B: AsRef<[u8]>>(buf: &mut io::Cursor<B>) -> io::Result<()> {
         <[u8; 16]>::check(buf)
     }
 

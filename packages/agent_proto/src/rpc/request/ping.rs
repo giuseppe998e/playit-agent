@@ -22,7 +22,7 @@ impl Encode for Ping {
 }
 
 impl Decode for Ping {
-    fn check<B: AsRef<[u8]>>(buf: &mut io::Cursor<&B>) -> io::Result<()> {
+    fn check<B: AsRef<[u8]>>(buf: &mut io::Cursor<B>) -> io::Result<()> {
         crate::codec::checked_advance!(buf.remaining() > mem::size_of::<u64>());
         Option::<AgentSession>::check(buf)
     }

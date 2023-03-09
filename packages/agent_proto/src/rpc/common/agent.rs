@@ -25,7 +25,7 @@ impl Encode for AgentSession {
 }
 
 impl Decode for AgentSession {
-    fn check<B: AsRef<[u8]>>(buf: &mut io::Cursor<&B>) -> io::Result<()> {
+    fn check<B: AsRef<[u8]>>(buf: &mut io::Cursor<B>) -> io::Result<()> {
         crate::codec::checked_advance!(buf.remaining() >= mem::size_of::<u64>() * 3);
         Ok(())
     }

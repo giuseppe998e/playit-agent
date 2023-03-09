@@ -24,7 +24,7 @@ impl Encode for UdpChannelDetails {
 }
 
 impl Decode for UdpChannelDetails {
-    fn check<B: AsRef<[u8]>>(buf: &mut io::Cursor<&B>) -> io::Result<()> {
+    fn check<B: AsRef<[u8]>>(buf: &mut io::Cursor<B>) -> io::Result<()> {
         SocketAddr::check(buf)?;
 
         crate::codec::ensure!(buf.remaining() >= mem::size_of::<u64>());

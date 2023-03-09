@@ -30,7 +30,7 @@ impl Encode for PortMappingResponse {
 }
 
 impl Decode for PortMappingResponse {
-    fn check<B: AsRef<[u8]>>(buf: &mut io::Cursor<&B>) -> io::Result<()> {
+    fn check<B: AsRef<[u8]>>(buf: &mut io::Cursor<B>) -> io::Result<()> {
         Socket::check(buf)?;
         Option::<PortMappingFound>::check(buf)
     }
@@ -73,7 +73,7 @@ impl Encode for PortMappingFound {
 }
 
 impl Decode for PortMappingFound {
-    fn check<B: AsRef<[u8]>>(buf: &mut io::Cursor<&B>) -> io::Result<()> {
+    fn check<B: AsRef<[u8]>>(buf: &mut io::Cursor<B>) -> io::Result<()> {
         crate::codec::ensure!(buf.remaining() >= mem::size_of::<u32>());
         let discriminant = <u32>::decode(buf) as u8;
 

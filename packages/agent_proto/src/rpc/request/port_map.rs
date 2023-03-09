@@ -14,7 +14,7 @@ pub struct PortMappingRequest {
 }
 
 impl Decode for PortMappingRequest {
-    fn check<B: AsRef<[u8]>>(buf: &mut io::Cursor<&B>) -> io::Result<()> {
+    fn check<B: AsRef<[u8]>>(buf: &mut io::Cursor<B>) -> io::Result<()> {
         AgentSession::check(buf)?;
         Socket::check(buf)
     }

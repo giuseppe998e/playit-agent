@@ -74,7 +74,7 @@ impl Encode for HmacSign<Sha256> {
 }
 
 impl Decode for HmacSign<Sha256> {
-    fn check<B: AsRef<[u8]>>(buf: &mut io::Cursor<&B>) -> io::Result<()> {
+    fn check<B: AsRef<[u8]>>(buf: &mut io::Cursor<B>) -> io::Result<()> {
         crate::codec::checked_advance!(buf.remaining() >= Self::SIZE);
         Ok(())
     }

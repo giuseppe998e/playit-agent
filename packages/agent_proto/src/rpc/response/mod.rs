@@ -103,7 +103,7 @@ impl Encode for RpcResponse {
 }
 
 impl Decode for RpcResponse {
-    fn check<B: AsRef<[u8]>>(buf: &mut io::Cursor<&B>) -> io::Result<()> {
+    fn check<B: AsRef<[u8]>>(buf: &mut io::Cursor<B>) -> io::Result<()> {
         crate::codec::ensure!(buf.remaining() >= mem::size_of::<u32>());
         let discriminant = <u32>::decode(buf) as u8;
 

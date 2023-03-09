@@ -44,7 +44,7 @@ impl<T: Encode> Encode for RemoteProcedureCall<T> {
 }
 
 impl<T: Decode> Decode for RemoteProcedureCall<T> {
-    fn check<B: AsRef<[u8]>>(buf: &mut io::Cursor<&B>) -> io::Result<()> {
+    fn check<B: AsRef<[u8]>>(buf: &mut io::Cursor<B>) -> io::Result<()> {
         crate::codec::checked_advance!(buf.remaining() > mem::size_of::<u64>());
         T::check(buf)
     }

@@ -34,7 +34,7 @@ impl Encode for Protocol {
 }
 
 impl Decode for Protocol {
-    fn check<B: AsRef<[u8]>>(buf: &mut io::Cursor<&B>) -> io::Result<()> {
+    fn check<B: AsRef<[u8]>>(buf: &mut io::Cursor<B>) -> io::Result<()> {
         crate::codec::ensure!(buf.remaining() >= mem::size_of::<u8>());
         let discriminant = <u8>::decode(buf);
 
