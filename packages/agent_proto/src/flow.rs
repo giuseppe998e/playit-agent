@@ -147,10 +147,9 @@ impl Decode for SocketFlow {
 
     fn decode<B: Buf>(buf: &mut B) -> Self {
         let buf_chunk = buf.chunk();
-        let buf_remaining = buf.remaining();
 
         // V4
-        if buf_remaining >= SocketFlowV4::size() + FLOW_ID_SIZE {
+        {
             let footer_id = {
                 let bytes = &buf_chunk[SocketFlowV4::size()..];
                 let bytes = unsafe { *(bytes as *const _ as *const [_; FLOW_ID_SIZE]) };
@@ -165,7 +164,7 @@ impl Decode for SocketFlow {
         }
 
         // V6
-        if buf_remaining >= SocketFlowV6::size() + FLOW_ID_SIZE {
+        {
             let footer_id = {
                 let bytes = &buf_chunk[SocketFlowV6::size()..];
                 let bytes = unsafe { *(bytes as *const _ as *const [_; FLOW_ID_SIZE]) };
@@ -347,8 +346,8 @@ impl Decode for SocketFlowV6 {
         let dest_port = <u16>::decode(buf);
         let flowinfo = <u32>::decode(buf);
 
-        let src = SocketAddrV6::new(src_ip.into(), src_port, flowinfo, 0);
-        let dest = SocketAddrV6::new(dest_ip.into(), dest_port, flowinfo, 0);
+        let src = SocketAddrV6::new(src_ip.into(), src_port, 0, 0);
+        let dest = SocketAddrV6::new(dest_ip.into(), dest_port, 0, 0);
 
         Self::new(src, dest, flowinfo)
     }

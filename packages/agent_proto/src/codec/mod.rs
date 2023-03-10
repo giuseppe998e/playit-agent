@@ -90,11 +90,12 @@ mod encode_decode {
         net::{IpAddr, Ipv4Addr, SocketAddr, SocketAddrV4, SocketAddrV6},
     };
 
-    use bytes::BytesMut;
+    use bytes::{Bytes, BytesMut};
     use rand::random;
 
     use crate::{
         codec::{Decode, Encode},
+        feed::{ClaimInstructions, ClientDetails, ControlFeed},
         flow::{SocketFlow, SocketFlowV4, SocketFlowV6},
         hmac::{signer::HmacSigner, HmacSign},
         rpc::{
@@ -434,8 +435,8 @@ mod encode_decode {
     fn test_socketflow_v4() {
         let mut buf = BytesMut::with_capacity(SocketFlowV6::size() + mem::size_of::<u64>());
         let data = SocketFlow::V4(SocketFlowV4::new(
-            SocketAddrV4::new([192, 168, 1, 1].into(), 1324),
-            SocketAddrV4::new([232, 168, 0, 132].into(), 4312),
+            SocketAddrV4::new([192, 168, 1, 1].into(), random()),
+            SocketAddrV4::new([232, 168, 0, 132].into(), random()),
         ));
 
         // Encode
@@ -452,9 +453,9 @@ mod encode_decode {
     fn test_socketflow_v6() {
         let mut buf = BytesMut::with_capacity(SocketFlowV6::size() + mem::size_of::<u64>());
         let data = SocketFlow::V6(SocketFlowV6::new(
-            SocketAddrV6::new([192, 168, 1, 1, 1, 255, 1, 1].into(), 1324, 6543, 0),
-            SocketAddrV6::new([232, 168, 1, 1, 1, 1, 168, 232].into(), 4312, 6543, 0),
-            6543,
+            SocketAddrV6::new([192, 168, 1, 1, 1, 255, 1, 1].into(), random(), 0, 0),
+            SocketAddrV6::new([232, 168, 1, 1, 1, 1, 168, 232].into(), random(), 0, 0),
+            random(),
         ));
 
         // Encode
@@ -464,6 +465,36 @@ mod encode_decode {
         let mut buf_cursor = io::Cursor::new(&buf);
         assert!(matches!(SocketFlow::check(&mut buf_cursor), Ok(())));
         let dec_result = SocketFlow::decode(&mut buf);
+        assert_eq!(data, dec_result)
+    }
+
+    #[test]
+    fn test_controlfeed_clientdetails() {
+        let mut buf =
+            BytesMut::with_capacity(mem::size_of::<u32>() + mem::size_of::<ClientDetails>());
+        let data = ControlFeed::NewClient(ClientDetails {
+            connect_addr: SocketAddr::V6(SocketAddrV6::new(
+                [192, 168, 1, 1, 1, 255, 1, 1].into(),
+                random(),
+                0,
+                0,
+            )),
+            peer_addr: SocketAddr::V4(SocketAddrV4::new([232, 168, 0, 132].into(), random())),
+            claim_instructions: ClaimInstructions {
+                tunnel_addr: SocketAddr::V4(SocketAddrV4::new(Ipv4Addr::LOCALHOST, random())),
+                token: Bytes::new(),
+            },
+            tunnel_id: random(),
+            data_center_id: random(),
+        });
+
+        // Encode
+        assert!(matches!(data.clone().encode(&mut buf), Ok(_)));
+
+        // Decode
+        let mut buf_cursor = io::Cursor::new(&buf);
+        assert!(matches!(ControlFeed::check(&mut buf_cursor), Ok(())));
+        let dec_result = ControlFeed::decode(&mut buf);
         assert_eq!(data, dec_result)
     }
 }
